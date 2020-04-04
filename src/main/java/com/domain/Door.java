@@ -1,6 +1,8 @@
 package com.domain;
 
 import com.constants.Location;
+import com.domain.impl.Body;
+
 import java.util.Objects;
 
 public class Door {

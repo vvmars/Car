@@ -1,6 +1,6 @@
 package com;
 
-import com.domain.Car;
+import com.domain.impl.Car;
 import com.service.CarFactory;
 
 import java.util.Scanner;
@@ -10,8 +10,21 @@ public class Application {
         Car car = CarFactory.buildSedan();
         car.insertKey();
         car.turnOnKey();
-        car.pressGas();
-        car.pressGas();
+        car.pressGas(1);
+        car.releaseGas(1);
+        car.upGear();
+        car.pressGas(1);
+        car.releaseGas(1);
+        car.pressGas(7);
+        car.pressBrake(1);
+        car.releaseBrake(1);
+
+        car.steerLeft();
+        car.steerRight();
+        car.steerRight();
+        car.steerStraight();
+        car.steerRight();
+        car.diagnostic();
     }
 
     private static void printLegend(){

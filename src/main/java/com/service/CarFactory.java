@@ -2,6 +2,9 @@ package com.service;
 
 import com.constants.Location;
 import com.domain.*;
+import com.domain.impl.Car;
+import com.domain.impl.PetrolEngine;
+import com.domain.impl.Wheel;
 
 import java.util.Arrays;
 import java.util.Map;

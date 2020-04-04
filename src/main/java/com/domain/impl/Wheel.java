@@ -1,27 +1,34 @@
-package com.domain;
+package com.domain.impl;
 
 import com.constants.Location;
+import com.domain.ControlWheel;
 
-public class Wheel implements ControlWheel{
+public class Wheel implements ControlWheel {
     private Location location;
     private int innerRadius;
     private int outerRadius;
     //0 - maxAngle
-    private float angle;
+    private int angle;
     private boolean rotated;
-
+    private static final int ANGLE_DELTA = 5;
     private static final int maxAngle = 45;
 
     //==========================================================
     @Override
     public void increaseAngle(){
         if (angle < maxAngle)
-            angle += 500;
+            angle += ANGLE_DELTA;
     }
+
     @Override
     public void decreaseAngle(){
-        if (angle > 0)
-            angle -= 500;
+        if (angle > -maxAngle)
+            angle -= ANGLE_DELTA;
+    }
+
+    @Override
+    public void resetAngle(){
+        angle = 0;
     }
     //==========================================================
 
@@ -49,11 +56,11 @@ public class Wheel implements ControlWheel{
         this.outerRadius = outerRadius;
     }
 
-    public float getAngle() {
+    public int getAngle() {
         return angle;
     }
 
-    public void setAngle(float angle) {
+    public void setAngle(int angle) {
         this.angle = angle;
     }
 
@@ -104,7 +111,7 @@ public class Wheel implements ControlWheel{
             return this;
         }
 
-        public Builder withAngle(float angle){
+        public Builder withAngle(int angle){
             wheel.angle = angle;
             return this;
         }

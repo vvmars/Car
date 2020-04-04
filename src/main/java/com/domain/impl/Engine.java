@@ -1,6 +1,8 @@
-package com.domain;
+package com.domain.impl;
 
 import com.constants.Event;
+import com.domain.ControlEngine;
+import com.domain.EventListener;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -8,13 +10,13 @@ import java.util.List;
 import java.util.Map;
 import static com.constants.FuelLevel.CRITICAL;
 
-public abstract class Engine implements ControlEngine{
+public abstract class Engine implements ControlEngine {
     private boolean started;
     //HP
     protected final int power;
     //0 - MAX_TORQUE
-    private int torque;
-    private static final float MAX_TORQUE = 5000;
+    protected int torque;
+    private static final float MAX_TORQUE = 3500;
     protected final Map<Integer, Integer> fuelConsumption;
     //private heater;
     //private oilLevel;
@@ -53,6 +55,16 @@ public abstract class Engine implements ControlEngine{
             torque -= 500;
     }
 
+    @Override
+    public int getTorque() {
+        return torque;
+    }
+
+    @Override
+    public boolean isStarted() {
+        return started;
+    }
+
     //=========================================================
 
     public void subscribe(Event event, EventListener listener){
@@ -62,10 +74,6 @@ public abstract class Engine implements ControlEngine{
 
     //=========================================================
 
-    public boolean isStarted() {
-        return started;
-    }
-
     public void setStarted(boolean started) {
         this.started = started;
     }
@@ -74,15 +82,11 @@ public abstract class Engine implements ControlEngine{
         return power;
     }
 
-    public int getTorque() {
-        return torque;
-    }
-
     public void setTorque(int torque) {
         this.torque = torque;
     }
 
-    public Map<Integer, Integer> getFuelConsumption() {
+    /*public Map<Integer, Integer> getFuelConsumption() {
         return fuelConsumption;
-    }
+    }*/
 }

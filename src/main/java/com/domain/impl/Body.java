@@ -1,9 +1,11 @@
-package com.domain;
+package com.domain.impl;
 
 import com.constants.Event;
 import com.constants.LightStatus;
 import com.constants.Location;
 import com.constants.VehicleLight;
+import com.domain.*;
+import com.domain.EventListener;
 
 import java.util.*;
 import static com.constants.Event.DOOR_OPEN;
@@ -11,11 +13,11 @@ import static com.constants.LightStatus.OFF;
 import static com.constants.LightStatus.ON;
 import static java.lang.String.format;
 
-public class Body implements ControlBody{
+public class Body implements ControlBody {
     private Map<Location, Door> doors;
     private Map<VehicleLight, CarLight> carLights;
 
-    private Map<Event, List<EventListener>> listeners;
+    private Map<Event, List<com.domain.EventListener>> listeners;
 
     private static final String MSG_DOOR_OPEN = "%s door was opened";
     private static final String MSG_DOOR_LOCKED_OPEN = "Passenger's is trying to open %s which is %s";
@@ -75,7 +77,7 @@ public class Body implements ControlBody{
     }
 
     @Override
-    public void subscribe(Event event, EventListener listener){
+    public void subscribe(Event event, com.domain.EventListener listener){
         List<EventListener> list = listeners.computeIfAbsent(event, (k) -> new ArrayList<>());
         list.add(listener);
     }

@@ -1,6 +1,7 @@
 package com.domain;
 
 import com.constants.Event;
+import com.domain.impl.Car;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;

@@ -1,4 +1,4 @@
-package com.domain;
+package com.domain.impl;
 
 import com.constants.FuelLevel;
 
@@ -14,30 +14,31 @@ public class DieselEngine extends Engine {
     public DieselEngine(float maxDieselLevel, int power){
         super(power);
         this.maxDieselLevel = maxDieselLevel;
-        fuelConsumption.put(0, 10);
-        fuelConsumption.put(10, 9);
-        fuelConsumption.put(20, 8);
-        fuelConsumption.put(40, 7);
-        fuelConsumption.put(80, 6);
-        fuelConsumption.put(120, 5);
-        fuelConsumption.put(160, 8);
-        fuelConsumption.put(200, 10);
+        fuelConsumption.put(0, 0);
+        fuelConsumption.put(500, 9);
+        fuelConsumption.put(1000, 8);
+        fuelConsumption.put(1300, 7);
+        fuelConsumption.put(1500, 6);
+        fuelConsumption.put(1800, 5);
+        fuelConsumption.put(2500, 8);
+        fuelConsumption.put(3000, 10);
+        fuelConsumption.put(3500, 12);
     }
 
     //=========================================================
 
     @Override
-    public void consumeFuel(float speed){
-        dieselLevel -= getFuelConsumption(speed)/3600;
+    public void consumeFuel(){
+        dieselLevel -= getFuelConsumption()/60;
     }
 
     /**
      * return fuel in L/h
      */
     @Override
-    public float getFuelConsumption(float speed){
+    public float getFuelConsumption(){
         return fuelConsumption.entrySet().stream()
-                .filter(e -> e.getKey() < speed)
+                .filter(e -> e.getKey() < torque)
                 .max(Comparator.comparing(Map.Entry::getKey))
                 .map(Map.Entry::getValue)
                 .orElse(0) * power / 150f;
@@ -54,21 +55,18 @@ public class DieselEngine extends Engine {
     }
 
     @Override
+    public float getFuel(){
+        return dieselLevel;
+    }
+
+    @Override
     public FuelLevel checkFuelLevel(){
         float currFuelLevel = dieselLevel * 100 / maxDieselLevel;
         return currFuelLevel < 1 ? CRITICAL : currFuelLevel < 4 ? LOW : NORMAL;
     }
     //=========================================================
 
-    public float getDieselLevel() {
-        return dieselLevel;
-    }
-
     public void setDieselLevel(float dieselLevel) {
         this.dieselLevel = dieselLevel;
-    }
-
-    public float getMaxDieselLevel() {
-        return maxDieselLevel;
     }
 }

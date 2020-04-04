@@ -1,4 +1,4 @@
-package com.domain;
+package com.domain.impl;
 
 import com.constants.FuelLevel;
 
@@ -14,29 +14,30 @@ public class ElectroEngine extends Engine {
     public ElectroEngine(float maxChargeLevel, int power){
         super(power);
         this.maxChargeLevel = maxChargeLevel;
-        fuelConsumption.put(0, 1500);
-        fuelConsumption.put(10, 1800);
-        fuelConsumption.put(20, 1500);
-        fuelConsumption.put(40, 1200);
-        fuelConsumption.put(80, 900);
-        fuelConsumption.put(120, 800);
-        fuelConsumption.put(160, 1200);
-        fuelConsumption.put(200, 1500);
+        fuelConsumption.put(0, 0);
+        fuelConsumption.put(500, 1800);
+        fuelConsumption.put(1000, 1500);
+        fuelConsumption.put(1300, 1200);
+        fuelConsumption.put(1500, 900);
+        fuelConsumption.put(1800, 800);
+        fuelConsumption.put(2500, 1200);
+        fuelConsumption.put(3000, 1500);
+        fuelConsumption.put(3500, 2000);
     }
 
     //=========================================================
     @Override
-    public void consumeFuel(float speed){
-        chargeLevel -= getFuelConsumption(speed)/3600;
+    public void consumeFuel(){
+        chargeLevel -= getFuelConsumption()/60;
     }
 
     /**
      * return fuel in mA/h
      */
     @Override
-    public float getFuelConsumption(float speed){
+    public float getFuelConsumption(){
         return fuelConsumption.entrySet().stream()
-                .filter(e -> e.getKey() < speed)
+                .filter(e -> e.getKey() < torque)
                 .max(Comparator.comparing(Map.Entry::getKey))
                 .map(Map.Entry::getValue)
                 .orElse(0) * power / 150f;
@@ -53,6 +54,11 @@ public class ElectroEngine extends Engine {
     }
 
     @Override
+    public float getFuel(){
+        return chargeLevel;
+    }
+
+    @Override
     public FuelLevel checkFuelLevel(){
         float currFuelLevel = chargeLevel * 100 / maxChargeLevel;
         return currFuelLevel < 2 ? CRITICAL : currFuelLevel < 7 ? LOW : NORMAL;
@@ -60,16 +66,8 @@ public class ElectroEngine extends Engine {
 
     //=========================================================
 
-    public float getChargeLevel() {
-        return chargeLevel;
-    }
-
     public void setChargeLevel(float chargeLevel) {
         this.chargeLevel = chargeLevel;
-    }
-
-    public float getMaxChargeLevel() {
-        return maxChargeLevel;
     }
 }
 
