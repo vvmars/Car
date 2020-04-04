@@ -1,0 +1,35 @@
+Assignment: Using Java or Scala, write  classes and methods representing a high level Objected Oriented Design for an automobile.
+
+Please include classes for major functional components--Car, wheels, engine, etc
+
+The overall goal is to model the sequence of events that happens when a person gets in a car and drives around the block.
+
+	Here's a short (non-exhaustive) list reasonable methods that should be callable on appropriate components:
+	InsertKey 
+	RemoveKey
+	TurnKey
+	PressBrake
+	ReleaseBrake
+	PressGas
+	ReleaseGas
+	SteerLeft
+	SteerStraight
+	SteerRight
+	PutCarInPark
+	PutCarInDrive
+	PutCarInReverse
+
+Input-- 
+from the main method from the car class, please call a sequence of methods representing a short drive.
+
+Output:
+After each call, the application should output a message detailing the car's current state, (along with reasonable error messages)
+	"The car is off"
+	"The engine is running"
+	"The car is moving forward"
+	"The car is turning left"
+	"Error: You just tried to put the car in park while it was moving forward!"
+	etc.
+	
+Note: This is not intended to be a detailed simulation. You can assume that if the car is on, in drive, and you press the gas pedal, that the car simply goes to a state of "driving forward"
+How many components contribute to that happening is up to you.
