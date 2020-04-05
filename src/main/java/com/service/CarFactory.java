@@ -44,6 +44,7 @@ public class CarFactory {
                 .withWheels(wheelsBuilder(14, 16))
                 .withMaxSpeed(160)
                 .withClearance(15)
+                .withSeats(5)
                 .build();
     }
 
@@ -70,10 +71,11 @@ public class CarFactory {
                 .withWheels(wheelsBuilder(14, 16))
                 .withMaxSpeed(190)
                 .withClearance(15)
+                .withSeats(5)
                 .build();
     }
 
-    private static Map<Location, Door> doorsBuilder(){
+    public static Map<Location, Door> doorsBuilder(){
         return Arrays.stream(Location.values())
                 .map(location ->
                         Door.builder()
@@ -82,7 +84,7 @@ public class CarFactory {
                 .collect(Collectors.toMap(Door::getLocation, door -> door));
     }
 
-    private static Map<Location, Wheel> wheelsBuilder(int innerRadius, int outerRadius){
+    public static Map<Location, Wheel> wheelsBuilder(int innerRadius, int outerRadius){
         return Arrays.stream(Location.values())
                 .map(location ->
                         Wheel.builder()

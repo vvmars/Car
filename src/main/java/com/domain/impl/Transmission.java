@@ -4,6 +4,8 @@ import com.constants.Drive;
 import com.constants.NTransmission;
 import com.domain.ControlTransmission;
 
+import java.util.Objects;
+
 import static com.constants.NTransmission.*;
 
 public class Transmission implements ControlTransmission {
@@ -90,18 +92,28 @@ public class Transmission implements ControlTransmission {
     }
     //=======================================================================
 
-    public boolean isAutomatic() {
-        return automatic;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Transmission)) return false;
+        Transmission that = (Transmission) o;
+        return automatic == that.automatic &&
+                transmission == that.transmission &&
+                drive == that.drive;
     }
 
-    public void setAutomatic(boolean automatic) {
-        this.automatic = automatic;
+    @Override
+    public int hashCode() {
+        return Objects.hash(automatic, transmission, drive);
     }
 
-
-
-    public void setDrive(Drive drive) {
-        this.drive = drive;
+    @Override
+    public String toString() {
+        return "Transmission{" +
+                "automatic=" + automatic +
+                ", transmission=" + transmission +
+                ", drive=" + drive +
+                '}';
     }
 
     //=======================================================================

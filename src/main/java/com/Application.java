@@ -1,9 +1,13 @@
 package com;
 
+import com.constants.Location;
 import com.domain.ControlCar;
 import com.exception.CarException;
 import com.service.CarFactory;
 import java.util.Scanner;
+
+import static com.constants.Location.FRONT_LEFT;
+import static com.constants.Location.FRONT_RIGHT;
 
 public class Application {
     public static void main(String[] args) throws CarException {
@@ -17,6 +21,10 @@ public class Application {
         car.insertKey();
         car.turnOnKey();
         car.pressGas(1);
+
+        car.openDoorInside(FRONT_LEFT);
+        car.openDoorOutside(FRONT_RIGHT);
+
         car.releaseGas(1);
         car.upGear();
         car.pressGas(1);

@@ -7,7 +7,7 @@ import com.constants.VehicleLight;
 import com.domain.*;
 import com.domain.EventListener;
 import java.util.*;
-import static com.constants.Constants.MSG_DOOR_LOCKED_OPEN;
+import static com.constants.Constants.WARNING_DOOR_LOCKED_OPEN;
 import static com.constants.Constants.MSG_DOOR_OPEN;
 import static com.constants.Event.DOOR_OPEN;
 import static com.constants.LightStatus.OFF;
@@ -20,13 +20,7 @@ public class Body implements ControlBody, Subscribe {
 
     private Map<Event, List<EventListener>> listeners;
 
-    public Body(){
-        doors = new EnumMap<>(Location.class);
-        carLights = new EnumMap<>(VehicleLight.class);
-        listeners = new EnumMap<>(Event.class);
-    }
-
-    public Body(Map<Location, Door> doors, Map<VehicleLight, CarLight> carLights){
+    private Body(Map<Location, Door> doors, Map<VehicleLight, CarLight> carLights){
         this.doors = doors;
         this.carLights = carLights;
         listeners = new EnumMap<>(Event.class);
@@ -65,49 +59,68 @@ public class Body implements ControlBody, Subscribe {
     }
 
     @Override
+    public void lockAllDoors() {
+        doors.values().forEach(Door::lockDoor);
+    }
+
+    @Override
     public void subscribe(Event event, com.domain.EventListener listener){
         List<EventListener> list = listeners.computeIfAbsent(event, (k) -> new ArrayList<>());
         list.add(listener);
     }
     //--------------------------------------------------
 
+    private void notifyListeners(String msg) {
+        listeners.get(DOOR_OPEN).forEach(listener -> listener.handleEvent(DOOR_OPEN, msg));
+    }
+
     public void openDoorInside(Location location) {
         Door door = doors.get(location);
         door.unlockDoor();
         door.openDoor();
-        notifyListeners(location);
-    }
-
-    private void notifyListeners(Location location) {
-        listeners.get(DOOR_OPEN).forEach(listener -> listener.handleEvent(DOOR_OPEN, format(MSG_DOOR_OPEN, location)));
+        notifyListeners(format(MSG_DOOR_OPEN, location.getValue()));
     }
 
     public void openDoorOutside(Location location) {
         Door door = doors.get(location);
         if (door.isStatusLock()) {
-            listeners.get(DOOR_OPEN).forEach(listener -> listener.handleEvent(DOOR_OPEN, format(MSG_DOOR_LOCKED_OPEN, door.getLocation(), door.isStatusLock())));
+            notifyListeners(format(WARNING_DOOR_LOCKED_OPEN, door.getLocation().getValue(), "locked"));
         } else {
             door.openDoor();
-            notifyListeners(location);
+            notifyListeners(format(WARNING_DOOR_LOCKED_OPEN, door.getLocation().getValue(), "unlocked"));
         }
     }
 
     //*********************************************************
 
-    public void addDoors(Location location, Door door) {
-        doors.put(location, door);
-    }
-
-    public void setDoors(Map<Location, Door> doors) {
-        this.doors = doors;
-    }
-
-    public void addCarLight(VehicleLight vehicleLight, CarLight carLight) {
-        carLights.put(vehicleLight, carLight);
-    }
-
     public Map<VehicleLight, CarLight> getCarLights() {
         return carLights;
+    }
+
+    public Map<Location, Door> getDoors() {
+        return doors;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Body)) return false;
+        Body body = (Body) o;
+        return doors.equals(body.doors) &&
+                carLights.equals(body.carLights);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(doors, carLights);
+    }
+
+    @Override
+    public String toString() {
+        return "Body{" +
+                "doors=" + doors +
+                ", carLights=" + carLights +
+                '}';
     }
 
     //==========================================================

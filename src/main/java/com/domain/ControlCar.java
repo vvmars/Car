@@ -1,5 +1,6 @@
 package com.domain;
 
+import com.constants.Location;
 import com.domain.impl.Body;
 
 public interface ControlCar {
@@ -29,4 +30,7 @@ public interface ControlCar {
 
     float refuel();
     float refuel(float fuel);
+
+    void openDoorInside(Location location);
+    void openDoorOutside(Location location);
 }

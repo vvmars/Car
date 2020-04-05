@@ -1,9 +1,9 @@
 package com.domain.impl;
 
 import com.constants.FuelLevel;
-
 import java.util.Comparator;
 import java.util.Map;
+import java.util.Objects;
 
 import static com.constants.FuelLevel.*;
 
@@ -75,6 +75,29 @@ public class ElectroEngine extends Engine {
 
     public void setChargeLevel(float chargeLevel) {
         this.chargeLevel = chargeLevel;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof ElectroEngine)) return false;
+        if (!super.equals(o)) return false;
+        ElectroEngine that = (ElectroEngine) o;
+        return Float.compare(that.chargeLevel, chargeLevel) == 0 &&
+                Float.compare(that.maxChargeLevel, maxChargeLevel) == 0;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), chargeLevel, maxChargeLevel);
+    }
+
+    @Override
+    public String toString() {
+        return "ElectroEngine{" +
+                "chargeLevel=" + chargeLevel +
+                ", maxChargeLevel=" + maxChargeLevel +
+                '}';
     }
 }
 

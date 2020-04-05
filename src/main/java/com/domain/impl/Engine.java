@@ -1,8 +1,6 @@
 package com.domain.impl;
 
-import com.constants.Event;
 import com.domain.ControlEngine;
-import com.domain.EventListener;
 import com.exception.CarException;
 import java.util.*;
 import static com.constants.Constants.ERROR_FUEL_CRITICAL_LEVEL;
@@ -20,13 +18,10 @@ public abstract class Engine implements ControlEngine {
     //private heater;
     //private oilLevel;
 
-    private Map<Event, List<EventListener>> listeners;
-
     public Engine (int power){
         started = false;
         this.power = power;
         fuelConsumption = new HashMap<>();
-        listeners = new EnumMap<>(Event.class);
     }
 
     //=========================================================
@@ -54,8 +49,6 @@ public abstract class Engine implements ControlEngine {
         if (checkFuelLevel() == CRITICAL) {
             started = false;
             torque = 0;
-//            listeners.get(CRITICAL_FUEL)
-//                    .forEach(listener -> listener.handleEvent(CRITICAL_FUEL, ERROR_FUEL_CRITICAL_LEVEL));
             throw new CarException(ERROR_FUEL_CRITICAL_LEVEL);
         }
     }
@@ -68,8 +61,6 @@ public abstract class Engine implements ControlEngine {
         if (checkFuelLevel() == CRITICAL) {
             started = false;
             torque = 0;
-//            listeners.get(CRITICAL_FUEL)
-//                    .forEach(listener -> listener.handleEvent(CRITICAL_FUEL, ERROR_FUEL_CRITICAL_LEVEL));
             throw new CarException(ERROR_FUEL_CRITICAL_LEVEL);
         }
     }
@@ -86,22 +77,19 @@ public abstract class Engine implements ControlEngine {
 
     //=========================================================
 
-    public void subscribe(Event event, EventListener listener){
-        List<EventListener> list = listeners.computeIfAbsent(event, (k) -> new ArrayList<>());
-        list.add(listener);
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Engine)) return false;
+        Engine engine = (Engine) o;
+        return started == engine.started &&
+                power == engine.power &&
+                torque == engine.torque &&
+                fuelConsumption.equals(engine.fuelConsumption);
     }
 
-    //=========================================================
-
-    public void setStarted(boolean started) {
-        this.started = started;
-    }
-
-    public int getPower() {
-        return power;
-    }
-
-    public void setTorque(int torque) {
-        this.torque = torque;
+    @Override
+    public int hashCode() {
+        return Objects.hash(started, power, torque, fuelConsumption);
     }
 }

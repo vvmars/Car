@@ -4,9 +4,9 @@ import com.constants.Location;
 import com.constants.NTransmission;
 import com.domain.*;
 import com.exception.CarException;
-
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.BiPredicate;
 import static com.constants.Constants.*;
 import static com.constants.Event.*;
@@ -25,14 +25,9 @@ public class Car implements ControlCar {
     private int gas = 0;
     //0-100%
     private int brake = 0;
-    private boolean power;
-    //0 - maxSpeed
-    private int speed = 0;
-    private final int maxSpeed;
     private int clearance;
     private int seats;
 
-    private static final int SPEED_DELTA = 10;
     private static final int GAS_DELTA = 10;
     private static final int BRAKE_DELTA = 10;
 
@@ -43,53 +38,53 @@ public class Car implements ControlCar {
     public Car (ControlBody body, ControlEngine engine,
                 ControlTransmission transmission, Map<Location, Wheel> wheels, int maxSpeed,
                 int clearance, int seats){
-        this.power = false;
-        this.tripComputer = new TripComputer(this);
+
         this.body = body;
         this.engine = engine;
         this.transmission = transmission;
         this.wheels = wheels;
-        this.maxSpeed = maxSpeed;
         this.clearance = clearance;
         this.seats = seats;
 
+        this.tripComputer = new TripComputer(maxSpeed);
+
         body.subscribe(DOOR_OPEN, tripComputer);
         body.subscribe(DOOR_CLOSE, tripComputer);
-        engine.subscribe(CRITICAL_FUEL, tripComputer);
-        //body.subscribe(DOOR_OPEN, tripComputer);
     }
 
     //==================================================
 
     @Override
     public void insertKey(){
-        if (power)
+        if (tripComputer.isCarStarted())
             TripComputer.printOnDashboard(ERROR_INSERT_KEY);
         else {
-            power = true;
+            tripComputer.setCarStarted(true);
+            body.lockAllDoors();
             TripComputer.printOnDashboard(MSG_SEPARATOR1);
             TripComputer.printOnDashboard(MSG_GREETING);
             TripComputer.printOnDashboard(MSG_SEPARATOR1);
             TripComputer.printOnDashboard(MSG_INSERT_KEY);
+            TripComputer.printOnDashboard(MSG_DOOR_LOCK_ALL);
             checkReadiness();
         }
     }
 
     @Override
     public void removeKey(){
-        if (!power)
+        if (!tripComputer.isCarStarted())
             TripComputer.printOnDashboard(ERROR_REMOVE_KEY);
-        else if (speed > 0)
+        else if (tripComputer.getSpeed() > 0)
             TripComputer.printOnDashboard(ERROR_REMOVE_KEY_MOVING);
         else {
-            power = false;
+            tripComputer.setCarStarted(false);
             System.out.println(" ****** GAME OVER! ******");
         }
     }
 
     @Override
     public void turnOnKey(){
-        if (!power)
+        if (!tripComputer.isCarStarted())
             TripComputer.printOnDashboard(ERROR_TURN_KEY);
         else if (engine.isStarted())
             TripComputer.printOnDashboard(ERROR_TURN_KEY_STARTED);
@@ -106,9 +101,9 @@ public class Car implements ControlCar {
 
     @Override
     public void turnBackKey(){
-        if (!power)
+        if (!tripComputer.isCarStarted())
             TripComputer.printOnDashboard(ERROR, "you are trying to switch off engine while key isn't here!");
-        else if (speed != 0)
+        else if (tripComputer.getSpeed() != 0)
             TripComputer.printOnDashboard(ERROR, "you are trying to switch off engine while it is moving!");
         else {
             engine.startOff();
@@ -150,7 +145,7 @@ public class Car implements ControlCar {
     @Override
     public void steerLeft() {
         changeAngleForSteerLeft(transmission.getDrive(), wheels);
-        if (speed > 0) {
+        if (tripComputer.getSpeed() > 0) {
             TripComputer.printOnDashboard(MSG_STEER_LEFT);
             if (getRealAngle(wheels) == 0)
                 TripComputer.printOnDashboard(MSG_STEER_STRAIGHT);
@@ -160,7 +155,7 @@ public class Car implements ControlCar {
     @Override
     public void steerRight() {
         changeAngleForSteerRight(transmission.getDrive(), wheels);
-        if (speed > 0) {
+        if (tripComputer.getSpeed() > 0) {
             TripComputer.printOnDashboard(MSG_STEER_RIGHT);
             if (getRealAngle(wheels) == 0)
                 TripComputer.printOnDashboard(MSG_STEER_STRAIGHT);
@@ -170,7 +165,7 @@ public class Car implements ControlCar {
     @Override
     public void steerStraight() {
         changeAngleForSteerStraight(transmission.getDrive(), wheels);
-        if (speed > 0) {
+        if (tripComputer.getSpeed() > 0) {
             TripComputer.printOnDashboard(MSG_STEER_STRAIGHT);
         }
     }
@@ -215,9 +210,9 @@ public class Car implements ControlCar {
     @Override
     public void diagnostic(boolean showAll) {
         if (showAll) {
-            printDiagnostic(power, speed, gas, brake, wheels, transmission.getTransmission(), engine);
+            printDiagnostic(tripComputer.isCarStarted(), tripComputer.getSpeed(), gas, brake, wheels, transmission.getTransmission(), engine);
         } else {
-            printDiagnostic(power, speed, transmission.getTransmission(), engine);
+            printDiagnostic(tripComputer.isCarStarted(), tripComputer.getSpeed(), transmission.getTransmission(), engine);
         }
     }
 
@@ -235,6 +230,16 @@ public class Car implements ControlCar {
         return newFuel;
     }
 
+    @Override
+    public void openDoorInside(Location location){
+        body.openDoorInside(location);
+    }
+
+    @Override
+    public void openDoorOutside(Location location){
+        body.openDoorOutside(location);
+    }
+
     //==================================================
 
     private void stopCar(){
@@ -243,7 +248,7 @@ public class Car implements ControlCar {
     }
 
     public void criticalStopCar(){
-        speed = 0;
+        tripComputer.resetSpeed();
         gas = 0;
         brake = 0;
         transmission.setTransmission(NEUTRAL);
@@ -259,11 +264,10 @@ public class Car implements ControlCar {
                 engine.increaseTorque();
                 if (canSpeedUp.test(transmission, engine))
                     TripComputer.printOnDashboard(WARNING_TRANSMISSION_NEUTRAL);
-                else if (speed < maxSpeed) {
-                    speed += SPEED_DELTA;
-                    if (speed == SPEED_DELTA)
+                else if (tripComputer.getSpeed() < tripComputer.getMaxSpeed()) {
+                    if (tripComputer.speedUp() == TripComputer.getSpeedDelta())
                         startRotated(wheels);
-                    TripComputer.printOnDashboard(MSG_INCREASING_GAS, speed);
+                    TripComputer.printOnDashboard(MSG_INCREASING_GAS, tripComputer.getSpeed());
                     if (transmission.getNextTransmission(engine.getTorque()) != transmission.getTransmission())
                         TripComputer.printOnDashboard(WARNING_TRANSMISSION_NEXT);
                 } else
@@ -280,14 +284,14 @@ public class Car implements ControlCar {
             int currSpeed;
             int i = 0;
             while (i < time && engine.isStarted()){
-                currSpeed = speed;
+                currSpeed = tripComputer.getSpeed();
                 engine.decreaseTorque();
                 if (canSpeedUp.test(transmission, engine))
                     TripComputer.printOnDashboard(WARNING_TRANSMISSION_NEUTRAL);
-                else if (speed > 0) {
-                    speed -= SPEED_DELTA;
-                    TripComputer.printOnDashboard(MSG_DECREASING_GAS, speed);
-                } else if (currSpeed != speed && speed == 0){
+                else if (tripComputer.getSpeed() > 0) {
+                    tripComputer.speedDown();
+                    TripComputer.printOnDashboard(MSG_DECREASING_GAS, tripComputer.getSpeed());
+                } else if (currSpeed != tripComputer.getSpeed() && tripComputer.getSpeed() == 0){
                     stopCar();
                     TripComputer.printOnDashboard(MSG_CAR_STOPPED);
                 }
@@ -303,12 +307,12 @@ public class Car implements ControlCar {
             int currSpeed;
             int i = 0;
             while (i < time && engine.isStarted()){
-                currSpeed = speed;
+                currSpeed = tripComputer.getSpeed();
                 engine.decreaseTorque();
-                if (speed > 0) {
-                    speed -= SPEED_DELTA;
-                    TripComputer.printOnDashboard(MSG_INCREASING_BRAKE, speed);
-                } else if (currSpeed != speed && speed == 0){
+                if (tripComputer.getSpeed() > 0) {
+                    tripComputer.speedDown();
+                    TripComputer.printOnDashboard(MSG_INCREASING_BRAKE, tripComputer.getSpeed());
+                } else if (currSpeed != tripComputer.getSpeed() && tripComputer.getSpeed() == 0){
                     stopCar();
                     TripComputer.printOnDashboard(MSG_CAR_STOPPED);
                 }
@@ -324,13 +328,13 @@ public class Car implements ControlCar {
             int currSpeed;
             int i = 0;
             while (i < time && engine.isStarted()){
-                currSpeed = speed;
-                if (speed > 0) {
-                    speed -= SPEED_DELTA;
+                currSpeed = tripComputer.getSpeed();
+                if (tripComputer.getSpeed() > 0) {
+                    tripComputer.speedDown();
                     engine.decreaseTorque();
-                    TripComputer.printOnDashboard(MSG_DECREASING_BRAKE, speed);
+                    TripComputer.printOnDashboard(MSG_DECREASING_BRAKE, tripComputer.getSpeed());
                 }
-                if (currSpeed != speed && speed == 0){
+                if (currSpeed != tripComputer.getSpeed() && tripComputer.getSpeed() == 0){
                     stopCar();
                     TripComputer.printOnDashboard(MSG_CAR_STOPPED);
                 }
@@ -342,60 +346,36 @@ public class Car implements ControlCar {
     }
     //==================================================
 
-    /*public boolean isStarted() {
-        return engine.isStarted();
-    }*/
-
-    /*public void setTripComputer(TripComputer tripComputer) {
-        this.tripComputer = tripComputer;
-    }*/
-
-    /*public TripComputer getTripComputer() {
-        return tripComputer;
-    }*/
-
-    /*public void setBody(Body body) {
-        this.body = body;
-    }*/
-
-    /*public void setEngine(Engine engine) {
-        this.engine = engine;
-    }*/
-
-    /*public void setTransmission(Transmission transmission) {
-        this.transmission = transmission;
-    }*/
-
-/*    public void setMaxSpeed(int maxSpeed) {
-        this.maxSpeed = maxSpeed;
-    }*/
-
-    public void setClearance(int clearance) {
-        this.clearance = clearance;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Car)) return false;
+        Car car = (Car) o;
+        return clearance == car.clearance &&
+                seats == car.seats &&
+                tripComputer.equals(car.tripComputer) &&
+                body.equals(car.body) &&
+                engine.equals(car.engine) &&
+                transmission.equals(car.transmission) &&
+                wheels.equals(car.wheels);
     }
 
-    public ControlTransmission getTransmission() {
-        return transmission;
+    @Override
+    public int hashCode() {
+        return Objects.hash(tripComputer, body, engine, transmission, wheels, clearance, seats);
     }
 
-    public ControlEngine getEngine() {
-        return engine;
-    }
-
-    public void setWheels(Map<Location, Wheel> wheels) {
-        this.wheels = wheels;
-    }
-
-    public Map<Location, Wheel> getWheels() {
-        return wheels;
-    }
-
-    public int getSeats() {
-        return seats;
-    }
-
-    public void setSeats(int seats) {
-        this.seats = seats;
+    @Override
+    public String toString() {
+        return "Car{" +
+                "tripComputer=" + tripComputer +
+                ", body=" + body +
+                ", engine=" + engine +
+                ", transmission=" + transmission +
+                ", wheels=" + wheels +
+                ", clearance=" + clearance +
+                ", seats=" + seats +
+                '}';
     }
 
     //========================================================

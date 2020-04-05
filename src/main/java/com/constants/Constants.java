@@ -63,6 +63,7 @@ public class Constants {
     public static final String MSG_STATE_ENGINE_FUEL    = "| --- fuel  ............... %.2f";
     public static final String MSG_STATE_ENGINE_FUEL_CONSUMPTION = "| --- fuel consumption .... %.2f";
 
-    public static final String MSG_DOOR_OPEN = "%s door was opened";
-    public static final String MSG_DOOR_LOCKED_OPEN = "Passenger's is trying to open %s which is %s";
+    public static final String MSG_DOOR_OPEN = " * warning, %s door was opened";
+    public static final String MSG_DOOR_LOCK_ALL = "All doors are locked";
+    public static final String WARNING_DOOR_LOCKED_OPEN = " * warning, passenger's trying to open %s door which is %s";
 }

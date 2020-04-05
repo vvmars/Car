@@ -4,6 +4,7 @@ import com.constants.FuelLevel;
 
 import java.util.Comparator;
 import java.util.Map;
+import java.util.Objects;
 
 import static com.constants.FuelLevel.*;
 
@@ -77,5 +78,28 @@ public class DieselEngine extends Engine {
 
     public void setDieselLevel(float dieselLevel) {
         this.dieselLevel = dieselLevel;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof DieselEngine)) return false;
+        if (!super.equals(o)) return false;
+        DieselEngine that = (DieselEngine) o;
+        return Float.compare(that.dieselLevel, dieselLevel) == 0 &&
+                Float.compare(that.maxDieselLevel, maxDieselLevel) == 0;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), dieselLevel, maxDieselLevel);
+    }
+
+    @Override
+    public String toString() {
+        return "DieselEngine{" +
+                "dieselLevel=" + dieselLevel +
+                ", maxDieselLevel=" + maxDieselLevel +
+                '}';
     }
 }

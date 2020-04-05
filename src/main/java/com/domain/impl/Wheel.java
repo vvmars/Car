@@ -3,6 +3,8 @@ package com.domain.impl;
 import com.constants.Location;
 import com.domain.ControlWheel;
 
+import java.util.Objects;
+
 public class Wheel implements ControlWheel {
     private Location location;
     private int innerRadius;
@@ -54,7 +56,30 @@ public class Wheel implements ControlWheel {
     public void setRotated(boolean rotated) {
         this.rotated = rotated;
     }
-//==========================================================
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Wheel)) return false;
+        Wheel wheel = (Wheel) o;
+        return innerRadius == wheel.innerRadius &&
+                outerRadius == wheel.outerRadius;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(innerRadius, outerRadius);
+    }
+
+    @Override
+    public String toString() {
+        return "Wheel{" +
+                "innerRadius=" + innerRadius +
+                ", outerRadius=" + outerRadius +
+                '}';
+    }
+
+    //==========================================================
     /**
      * static factory method for builder
      */

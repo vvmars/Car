@@ -17,14 +17,6 @@ public class Door {
         return location;
     }
 
-    public void setLocation(Location location) {
-        this.location = location;
-    }
-
-    public boolean isStatusOpen() {
-        return statusOpen;
-    }
-
     public boolean isStatusLock() {
         return statusLock;
     }
@@ -48,24 +40,20 @@ public class Door {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (!(o instanceof Door)) return false;
         Door door = (Door) o;
-        return location == door.location &&
-                statusOpen == door.statusOpen &&
-                statusLock == door.statusLock;
+        return location == door.location;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(location, statusOpen, statusLock);
+        return Objects.hash(location);
     }
 
     @Override
     public String toString() {
         return "Door{" +
-                "doorType=" + location +
-                ", statusOpen=" + statusOpen +
-                ", statusLock=" + statusLock +
+                "location=" + location +
                 '}';
     }
 
