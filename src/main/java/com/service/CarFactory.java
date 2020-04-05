@@ -5,6 +5,7 @@ import com.domain.*;
 import com.domain.impl.Car;
 import com.domain.impl.PetrolEngine;
 import com.domain.impl.Wheel;
+import com.exception.CarException;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -13,10 +14,18 @@ import static com.constants.Drive.*;
 import static com.constants.LightStatus.*;
 import static com.constants.NTransmission.*;
 import static com.constants.VehicleLight.*;
+import static java.lang.String.format;
 
 public class CarFactory {
 
-    public static Car buildSedan(){
+    public static ControlCar buildCar(String model) throws CarException {
+        switch(model){
+            case "Sedan": return buildSedan();
+            default: throw new CarException(format("Model %s was not implemented", model));
+        }
+    }
+
+    private static Car buildSedan(){
         PetrolEngine engine = new PetrolEngine(60, 120);
         engine.setPetrolLevel(2);
 

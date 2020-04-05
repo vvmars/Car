@@ -1,5 +1,7 @@
 package com.domain;
 
+import com.domain.impl.Body;
+
 public interface ControlCar {
     void insertKey();
     void removeKey();
@@ -23,7 +25,8 @@ public interface ControlCar {
     //PutCarInReverse
     void checkReadiness();
 
-    void diagnostic();
+    void diagnostic(boolean showAll);
 
     float refuel();
+    float refuel(float fuel);
 }

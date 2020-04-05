@@ -15,6 +15,7 @@ public class PetrolEngine extends Engine{
         super(power);
         this.maxPetrolLevel = maxPetrolLevel;
         fuelConsumption.put(0, 0);
+        fuelConsumption.put(10, 12);
         fuelConsumption.put(500, 12);
         fuelConsumption.put(1000, 10);
         fuelConsumption.put(1300, 8);
@@ -45,13 +46,15 @@ public class PetrolEngine extends Engine{
     }
 
     @Override
-    public void refuel(float fuel){
-        this.petrolLevel = fuel;
+    public float refuel(float fuel){
+        petrolLevel = Math.min(maxPetrolLevel - petrolLevel, petrolLevel + fuel);
+        return petrolLevel;
     }
 
     @Override
-    public void refuel(){
-        this.petrolLevel = maxPetrolLevel;
+    public float refuel(){
+        petrolLevel = maxPetrolLevel;
+        return petrolLevel;
     }
 
     @Override
@@ -65,6 +68,10 @@ public class PetrolEngine extends Engine{
         return currFuelLevel < 1 ? CRITICAL : currFuelLevel < 5 ? LOW : NORMAL;
     }
 
+    @Override
+    public float getMaxFuelLevel() {
+        return maxPetrolLevel;
+    }
     //=========================================================
 
     public void setPetrolLevel(float petrolLevel) {

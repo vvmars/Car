@@ -3,11 +3,9 @@ package com.domain.impl;
 import com.constants.Event;
 import com.domain.ControlEngine;
 import com.domain.EventListener;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import com.exception.CarException;
+import java.util.*;
+import static com.constants.Constants.ERROR_FUEL_CRITICAL_LEVEL;
 import static com.constants.FuelLevel.CRITICAL;
 
 public abstract class Engine implements ControlEngine {
@@ -21,21 +19,25 @@ public abstract class Engine implements ControlEngine {
     //private heater;
     //private oilLevel;
 
-    private Map<Event, List<EventListener>> listeners = new HashMap<>();
+    private Map<Event, List<EventListener>> listeners;
 
     public Engine (int power){
         started = false;
         this.power = power;
         fuelConsumption = new HashMap<>();
+        listeners = new EnumMap<>(Event.class);
     }
 
     //=========================================================
 
     @Override
-    public boolean startOn(){
+    public void startOn() throws CarException {
         if (checkFuelLevel() == CRITICAL)
-            return false;
-        else return started = true;
+            throw new CarException(ERROR_FUEL_CRITICAL_LEVEL);
+        else {
+            increaseTorque();
+            started = true;
+        }
     }
 
     @Override
@@ -44,15 +46,33 @@ public abstract class Engine implements ControlEngine {
     }
 
     @Override
-    public void increaseTorque(){
-        if (torque < MAX_TORQUE)
+    public void increaseTorque() throws CarException {
+        if (torque < MAX_TORQUE) {
             torque += 500;
+            consumeFuel();
+        }
+        if (checkFuelLevel() == CRITICAL) {
+            started = false;
+            torque = 0;
+//            listeners.get(CRITICAL_FUEL)
+//                    .forEach(listener -> listener.handleEvent(CRITICAL_FUEL, ERROR_FUEL_CRITICAL_LEVEL));
+            throw new CarException(ERROR_FUEL_CRITICAL_LEVEL);
+        }
     }
 
     @Override
-    public void decreaseTorque(){
-        if (torque > 0)
+    public void decreaseTorque() throws CarException {
+        if (torque > 0) {
             torque -= 500;
+            consumeFuel();
+        }
+        if (checkFuelLevel() == CRITICAL) {
+            started = false;
+            torque = 0;
+//            listeners.get(CRITICAL_FUEL)
+//                    .forEach(listener -> listener.handleEvent(CRITICAL_FUEL, ERROR_FUEL_CRITICAL_LEVEL));
+            throw new CarException(ERROR_FUEL_CRITICAL_LEVEL);
+        }
     }
 
     @Override

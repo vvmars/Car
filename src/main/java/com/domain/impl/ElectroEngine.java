@@ -15,6 +15,7 @@ public class ElectroEngine extends Engine {
         super(power);
         this.maxChargeLevel = maxChargeLevel;
         fuelConsumption.put(0, 0);
+        fuelConsumption.put(10, 1800);
         fuelConsumption.put(500, 1800);
         fuelConsumption.put(1000, 1500);
         fuelConsumption.put(1300, 1200);
@@ -44,13 +45,15 @@ public class ElectroEngine extends Engine {
     }
 
     @Override
-    public void refuel(float fuel){
-        this.chargeLevel = fuel;
+    public float refuel(float fuel){
+        chargeLevel = Math.min(maxChargeLevel - chargeLevel, chargeLevel + fuel);
+        return chargeLevel;
     }
 
     @Override
-    public void refuel(){
-        this.chargeLevel = maxChargeLevel;
+    public float refuel(){
+        chargeLevel = maxChargeLevel;
+        return chargeLevel;
     }
 
     @Override
@@ -64,6 +67,10 @@ public class ElectroEngine extends Engine {
         return currFuelLevel < 2 ? CRITICAL : currFuelLevel < 7 ? LOW : NORMAL;
     }
 
+    @Override
+    public float getMaxFuelLevel() {
+        return maxChargeLevel;
+    }
     //=========================================================
 
     public void setChargeLevel(float chargeLevel) {

@@ -8,6 +8,7 @@ import com.domain.TripComputer;
 import com.domain.impl.Wheel;
 import java.util.Map;
 import java.util.function.BiPredicate;
+import java.util.function.Consumer;
 
 import static com.constants.Constants.*;
 import static com.constants.Constants.MSG_PRINT_STATE;
@@ -54,25 +55,38 @@ public class Utils {
                 .orElse(0);
     }
 
-    public static void printDiagnostic(TripComputer tripComputer, boolean power, int speed, int gas, int brake,
+    public static void printDiagnostic(boolean power, int speed, int gas, int brake,
                            Map<Location, Wheel> wheels, NTransmission transmission, ControlEngine engine) {
-        tripComputer.printOnDashboard(MSG_SEPARATOR2);
-        tripComputer.printOnDashboard(MSG_PRINT_STATE);
-        tripComputer.printOnDashboard(MSG_STATE_POWER, power);
-        tripComputer.printOnDashboard(MSG_STATE_SPEED, speed);
-        tripComputer.printOnDashboard(MSG_STATE_GAS, gas);
-        tripComputer.printOnDashboard(MSG_STATE_BRAKE, brake);
-        tripComputer.printOnDashboard(MSG_STATE_WHEELS);
+        TripComputer.printOnDashboard(MSG_SEPARATOR2);
+        TripComputer.printOnDashboard(MSG_PRINT_STATE);
+        TripComputer.printOnDashboard(MSG_STATE_POWER, power);
+        TripComputer.printOnDashboard(MSG_STATE_SPEED, speed);
+        TripComputer.printOnDashboard(MSG_STATE_GAS, gas);
+        TripComputer.printOnDashboard(MSG_STATE_BRAKE, brake);
+        TripComputer.printOnDashboard(MSG_STATE_WHEELS);
         wheels.values().stream().forEach(wheel -> {
-            tripComputer.printOnDashboard(MSG_STATE_WHEEL, wheel.getLocation());
-            tripComputer.printOnDashboard(MSG_STATE_WHEEL_ROTATED, wheel.isRotated());
-            tripComputer.printOnDashboard(MSG_STATE_WHEEL_ANGLE, wheel.getAngle());
+            TripComputer.printOnDashboard(MSG_STATE_WHEEL, wheel.getLocation());
+            TripComputer.printOnDashboard(MSG_STATE_WHEEL_ROTATED, wheel.isRotated());
+            TripComputer.printOnDashboard(MSG_STATE_WHEEL_ANGLE, wheel.getAngle());
         });
-        tripComputer.printOnDashboard(MSG_STATE_TRANSMISSION, transmission);
-        tripComputer.printOnDashboard(MSG_STATE_ENGINE_STARTED, engine.isStarted());
-        tripComputer.printOnDashboard(MSG_STATE_ENGINE_TORQUE, engine.getTorque());
-        tripComputer.printOnDashboard(MSG_STATE_ENGINE_FUEL, engine.getFuel());
-        tripComputer.printOnDashboard(MSG_STATE_ENGINE_FUEL_CONSUMPTION, engine.getFuelConsumption());
-        tripComputer.printOnDashboard(MSG_SEPARATOR2);
+        TripComputer.printOnDashboard(MSG_STATE_TRANSMISSION, transmission);
+        TripComputer.printOnDashboard(MSG_STATE_ENGINE_STARTED, engine.isStarted());
+        TripComputer.printOnDashboard(MSG_STATE_ENGINE_TORQUE, engine.getTorque());
+        TripComputer.printOnDashboard(MSG_STATE_ENGINE_FUEL, engine.getFuel());
+        TripComputer.printOnDashboard(MSG_STATE_ENGINE_FUEL_CONSUMPTION, engine.getFuelConsumption());
+        TripComputer.printOnDashboard(MSG_SEPARATOR2);
+    }
+
+    public static void printDiagnostic(boolean power, int speed, NTransmission transmission, ControlEngine engine) {
+        TripComputer.printOnDashboard(MSG_SEPARATOR2);
+        TripComputer.printOnDashboard(MSG_PRINT_STATE);
+        TripComputer.printOnDashboard(MSG_STATE_POWER, power);
+        TripComputer.printOnDashboard(MSG_STATE_SPEED, speed);
+        TripComputer.printOnDashboard(MSG_STATE_TRANSMISSION, transmission);
+        TripComputer.printOnDashboard(MSG_STATE_ENGINE_STARTED, engine.isStarted());
+        TripComputer.printOnDashboard(MSG_STATE_ENGINE_TORQUE, engine.getTorque());
+        TripComputer.printOnDashboard(MSG_STATE_ENGINE_FUEL, engine.getFuel());
+        TripComputer.printOnDashboard(MSG_STATE_ENGINE_FUEL_CONSUMPTION, engine.getFuelConsumption());
+        TripComputer.printOnDashboard(MSG_SEPARATOR2);
     }
 }

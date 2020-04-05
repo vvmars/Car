@@ -15,6 +15,7 @@ public class DieselEngine extends Engine {
         super(power);
         this.maxDieselLevel = maxDieselLevel;
         fuelConsumption.put(0, 0);
+        fuelConsumption.put(10, 9);
         fuelConsumption.put(500, 9);
         fuelConsumption.put(1000, 8);
         fuelConsumption.put(1300, 7);
@@ -45,13 +46,15 @@ public class DieselEngine extends Engine {
     }
 
     @Override
-    public void refuel(float fuel){
-        this.dieselLevel = fuel;
+    public float refuel(float fuel){
+        dieselLevel = Math.min(maxDieselLevel - dieselLevel, dieselLevel + fuel);
+        return dieselLevel;
     }
 
     @Override
-    public void refuel(){
-        this.dieselLevel = maxDieselLevel;
+    public float refuel(){
+        dieselLevel = maxDieselLevel;
+        return dieselLevel;
     }
 
     @Override
@@ -64,6 +67,12 @@ public class DieselEngine extends Engine {
         float currFuelLevel = dieselLevel * 100 / maxDieselLevel;
         return currFuelLevel < 1 ? CRITICAL : currFuelLevel < 4 ? LOW : NORMAL;
     }
+
+    @Override
+    public float getMaxFuelLevel() {
+        return maxDieselLevel;
+    }
+
     //=========================================================
 
     public void setDieselLevel(float dieselLevel) {

@@ -3,13 +3,17 @@ package com.domain.impl;
 import com.constants.Location;
 import com.constants.NTransmission;
 import com.domain.*;
+import com.exception.CarException;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.BiPredicate;
 import static com.constants.Constants.*;
+import static com.constants.Event.*;
 import static com.constants.NTransmission.NEUTRAL;
 import static com.constants.VehicleLight.DAYTIME_RUNNING;
 import static com.helper.Utils.*;
+import static java.lang.String.format;
 
 public class Car implements ControlCar {
     private TripComputer tripComputer;
@@ -30,13 +34,18 @@ public class Car implements ControlCar {
     private int clearance;
     private int seats;
 
-    private static final int SPEAD_DELTA = 10;
+    private static final int SPEED_DELTA = 10;
     private static final int GAS_DELTA = 10;
     private static final int BRAKE_DELTA = 10;
+
+    BiPredicate<ControlTransmission, ControlEngine> canSpeedUp =
+            (transmission, engine) -> transmission.getTransmission() == NEUTRAL &&
+                    engine.isStarted();
 
     public Car (){
         power = false;
         wheels = new HashMap<>();
+        body = new Body();
         tripComputer = new TripComputer(this);
         //body.subscribe(DOOR_OPEN, tripComputer);
     }
@@ -46,10 +55,10 @@ public class Car implements ControlCar {
     @Override
     public void insertKey(){
         power = true;
-        tripComputer.printOnDashboard(MSG_SEPARATOR1);
-        tripComputer.printOnDashboard(MSG_GREETING);
-        tripComputer.printOnDashboard(MSG_SEPARATOR1);
-        tripComputer.printOnDashboard(MSG_INSERT_KEY);
+        TripComputer.printOnDashboard(MSG_SEPARATOR1);
+        TripComputer.printOnDashboard(MSG_GREETING);
+        TripComputer.printOnDashboard(MSG_SEPARATOR1);
+        TripComputer.printOnDashboard(MSG_INSERT_KEY);
         checkReadiness();
     }
 
@@ -61,71 +70,79 @@ public class Car implements ControlCar {
 
     @Override
     public void turnOnKey(){
-        engine.startOn();
-        tripComputer.printOnDashboard(MSG_START_ENGINE);
-        body.switchOnLight(DAYTIME_RUNNING);
-        tripComputer.printOnDashboard(MSG_LIGHT_SWITCH_ON, DAYTIME_RUNNING.getValue());
+        try {
+            engine.startOn();
+            TripComputer.printOnDashboard(MSG_ENGINE_START);
+            body.switchOnLight(DAYTIME_RUNNING);
+            TripComputer.printOnDashboard(MSG_LIGHT_SWITCH_ON, DAYTIME_RUNNING.getValue());
+        } catch (CarException e){
+            criticalStopCar();
+        }
     }
 
     @Override
     public void turnBackKey(){
         if (speed != 0)
-            tripComputer.printOnDashboard(ERROR, "you are trying to switch off engine while it is moving!");
+            TripComputer.printOnDashboard(ERROR, "you are trying to switch off engine while it is moving!");
         engine.startOff();
-        tripComputer.printOnDashboard(MSG_STOP_ENGINE);
+        TripComputer.printOnDashboard(MSG_ENGINE_STOP);
         body.switchOffLight();
-        tripComputer.printOnDashboard(MSG_ALL_LIGHT_SWITCH_OFF);
+        TripComputer.printOnDashboard(MSG_ALL_LIGHT_SWITCH_OFF);
     }
 
     @Override
     public void pressGas(int time) {
-        for (int i = 0; i < time; i++)
-            pressGas();
+        if (gas < 100)
+            gas += GAS_DELTA;
+        changeEngineOnPressGas(time);
     }
 
     @Override
     public void releaseGas(int time) {
-        for (int i = 0; i < time; i++)
-            releaseGas();
+        if (gas > 0)
+            gas -= GAS_DELTA;
+        changeEngineOnReleaseGas(time);
     }
 
     @Override
     public void pressBrake(int time) {
-        for (int i = 0; i < time; i++)
-            pressBrake();
+        if (brake < 100)
+            brake += BRAKE_DELTA;
+        changeEngineOnPressBrake(time);
     }
 
     @Override
     public void releaseBrake(int time) {
-        for (int i = 0; i < time; i++)
-            releaseBrake();
+        if (brake > 0)
+            brake -= BRAKE_DELTA;
+        changeEngineOnReleaseBrake(time);
     }
 
     @Override
     public void steerLeft() {
+        changeAngleForSteerLeft(transmission.getDrive(), wheels);
         if (speed > 0) {
-            changeAngleForSteerLeft(transmission.getDrive(), wheels);
-            tripComputer.printOnDashboard(MSG_STEER_LEFT);
+            TripComputer.printOnDashboard(MSG_STEER_LEFT);
+            if (getRealAngle(wheels) == 0)
+                TripComputer.printOnDashboard(MSG_STEER_STRAIGHT);
         }
-        if (getRealAngle(wheels) == 0)
-            tripComputer.printOnDashboard(MSG_STEER_STRAIGHT);
     }
 
     @Override
     public void steerRight() {
+        changeAngleForSteerRight(transmission.getDrive(), wheels);
         if (speed > 0) {
-            changeAngleForSteerRight(transmission.getDrive(), wheels);
-            tripComputer.printOnDashboard(MSG_STEER_RIGHT);
+            TripComputer.printOnDashboard(MSG_STEER_RIGHT);
+            if (getRealAngle(wheels) == 0)
+                TripComputer.printOnDashboard(MSG_STEER_STRAIGHT);
         }
-        if (getRealAngle(wheels) == 0)
-            tripComputer.printOnDashboard(MSG_STEER_STRAIGHT);
     }
 
     @Override
     public void steerStraight() {
+        changeAngleForSteerStraight(transmission.getDrive(), wheels);
         if (speed > 0) {
-            changeAngleForSteerStraight(transmission.getDrive(), wheels);
-            tripComputer.printOnDashboard(MSG_STEER_STRAIGHT);
+            TripComputer.printOnDashboard(MSG_STEER_STRAIGHT);
         }
     }
 
@@ -134,7 +151,7 @@ public class Car implements ControlCar {
         NTransmission nextTransmission = transmission.getNextTransmission();
         if (nextTransmission != transmission.getTransmission()) {
             transmission.setTransmission(nextTransmission);
-            tripComputer.printOnDashboard(MSG_TRANSMISSION_CHANGE, nextTransmission.getValue());
+            TripComputer.printOnDashboard(MSG_TRANSMISSION_CHANGE, nextTransmission.getValue());
         }
     }
 
@@ -143,37 +160,50 @@ public class Car implements ControlCar {
         NTransmission nextTransmission = transmission.getPrevTransmission(engine.getTorque());
         if (nextTransmission != transmission.getTransmission()) {
             transmission.setTransmission(nextTransmission);
-            tripComputer.printOnDashboard(MSG_TRANSMISSION_CHANGE, nextTransmission.getValue());
+            TripComputer.printOnDashboard(MSG_TRANSMISSION_CHANGE, nextTransmission.getValue());
         }
     }
 
     @Override
     public void checkReadiness(){
-        tripComputer.printOnDashboard(MSG_CHECKING_STATUS);
+        TripComputer.printOnDashboard(MSG_CHECKING_STATUS);
         if (body.checkLights())
-            tripComputer.printOnDashboard(MSG_LIGHT_OK);
+            TripComputer.printOnDashboard(MSG_LIGHT_OK);
         else
-            tripComputer.printOnDashboard(MSG_LIGHT_DEFECT);
+            TripComputer.printOnDashboard(MSG_LIGHT_DEFECT);
         switch (engine.checkFuelLevel()) {
             case CRITICAL:
-                tripComputer.printOnDashboard(ERROR_FUEL_CRITICAL_LEVEL);
+                TripComputer.printOnDashboard(ERROR_FUEL_CRITICAL_LEVEL);
                 break;
             case LOW:
-                tripComputer.printOnDashboard(WARNING_FUEL_LOW_LEVEL);
+                TripComputer.printOnDashboard(WARNING_FUEL_LOW_LEVEL);
                 break;
             default:
-                tripComputer.printOnDashboard(MSG_FUEL_NORMAL_LEVEL);
+                TripComputer.printOnDashboard(MSG_FUEL_NORMAL_LEVEL);
         }
     }
 
     @Override
-    public void diagnostic() {
-        printDiagnostic(tripComputer, power, speed, gas, brake, wheels, transmission.getTransmission(), engine);
+    public void diagnostic(boolean showAll) {
+        if (showAll) {
+            printDiagnostic(power, speed, gas, brake, wheels, transmission.getTransmission(), engine);
+        } else {
+            printDiagnostic(power, speed, transmission.getTransmission(), engine);
+        }
     }
 
     @Override
     public float refuel() {
-        return 0;
+        float newFuel = engine.refuel();
+        TripComputer.printOnDashboard(MSG_REFUEL, newFuel);
+        return newFuel;
+    }
+
+    @Override
+    public float refuel(float fuel) {
+        float newFuel = engine.refuel(fuel);
+        TripComputer.printOnDashboard(MSG_REFUEL, newFuel);
+        return newFuel;
     }
 
     //==================================================
@@ -183,78 +213,110 @@ public class Car implements ControlCar {
         stopRotated(wheels);
     }
 
-    private void pressGas() {
-        if (gas < 100) {
-            gas += GAS_DELTA;
-            engine.increaseTorque();
-            engine.consumeFuel();
-            if (transmission.getTransmission() == NEUTRAL)
-                tripComputer.printOnDashboard(WARNING_TRANSMISSION_NEUTRAL);
-            else if (speed < maxSpeed) {
-                speed += SPEAD_DELTA;
-                if (speed == SPEAD_DELTA)
-                    startRotated(wheels);
-                tripComputer.printOnDashboard(MSG_INCREASING_GAS, speed);
-                if (transmission.getNextTransmission(engine.getTorque()) != transmission.getTransmission())
-                    tripComputer.printOnDashboard(WARNING_TRANSMISSION_NEXT);
-            } else
-                tripComputer.printOnDashboard(WARNING_MAX_SPEED);
-        } else
-            tripComputer.printOnDashboard(WARNING_MAX_SPEED);
+    public void criticalStopCar(){
+        speed = 0;
+        gas = 0;
+        brake = 0;
+        transmission.setTransmission(NEUTRAL);
+        stopRotated(wheels);
+        TripComputer.printOnDashboard(ERROR_FUEL_CRITICAL_LEVEL);
+        TripComputer.printOnDashboard(format(MSG_FUEL_LEVEL, engine.getFuel(), engine.getFuel() * 100 / engine.getMaxFuelLevel()));
     }
 
-    private void releaseGas() {
-        if (gas > 0) {
-            gas -= GAS_DELTA;
-            engine.decreaseTorque();
-            engine.consumeFuel();
-            if (transmission.getTransmission() == NEUTRAL)
-                tripComputer.printOnDashboard(WARNING_TRANSMISSION_NEUTRAL);
-            else if (speed > 0) {
-                speed -= SPEAD_DELTA;
-                tripComputer.printOnDashboard(MSG_DECREASING_GAS, speed);
-            } else {
-                stopCar();
-                tripComputer.printOnDashboard(MSG_CAR_STOPPED);
+    private void changeEngineOnPressGas(int time) {
+        try {
+            int i = 0;
+            while (i < time && engine.isStarted()){
+                engine.increaseTorque();
+                if (canSpeedUp.test(transmission, engine))
+                    TripComputer.printOnDashboard(WARNING_TRANSMISSION_NEUTRAL);
+                else if (speed < maxSpeed) {
+                    speed += SPEED_DELTA;
+                    if (speed == SPEED_DELTA)
+                        startRotated(wheels);
+                    TripComputer.printOnDashboard(MSG_INCREASING_GAS, speed);
+                    if (transmission.getNextTransmission(engine.getTorque()) != transmission.getTransmission())
+                        TripComputer.printOnDashboard(WARNING_TRANSMISSION_NEXT);
+                } else
+                    TripComputer.printOnDashboard(WARNING_MAX_SPEED);
+                i++;
             }
-        } else
-            tripComputer.printOnDashboard(MSG_CAR_STOPPED);
-    }
-
-    private void pressBrake(){
-        if (brake < 100) {
-            brake += BRAKE_DELTA;
-            engine.decreaseTorque();
-            engine.consumeFuel();
-            if (speed > 0) {
-                speed -= SPEAD_DELTA;
-                tripComputer.printOnDashboard(MSG_INCREASING_BRAKE, speed);
-            } else {
-                stopCar();
-                tripComputer.printOnDashboard(MSG_CAR_STOPPED);
-            }
+        } catch (CarException e){
+            criticalStopCar();
         }
     }
 
-    public void releaseBrake() {
-        if (brake > 0) {
-            brake -= BRAKE_DELTA;
-            if (brake > 0 && speed > 0) {
-                speed -= SPEAD_DELTA;
+    private void changeEngineOnReleaseGas(int time) {
+        try {
+            int i = 0;
+            while (i < time && engine.isStarted()){
                 engine.decreaseTorque();
+                if (canSpeedUp.test(transmission, engine))
+                    TripComputer.printOnDashboard(WARNING_TRANSMISSION_NEUTRAL);
+                else if (speed > 0) {
+                    speed -= SPEED_DELTA;
+                    TripComputer.printOnDashboard(MSG_DECREASING_GAS, speed);
+                } else {
+                    stopCar();
+                    TripComputer.printOnDashboard(MSG_CAR_STOPPED);
+                }
+                i++;
             }
-            engine.consumeFuel();
-            tripComputer.printOnDashboard(MSG_DECREASING_BRAKE, speed);
-            if (speed == 0){
-                stopCar();
-                tripComputer.printOnDashboard(MSG_CAR_STOPPED);
+        } catch (CarException e){
+            criticalStopCar();
+        }
+    }
+
+    private void changeEngineOnPressBrake(int time){
+        try {
+            int i = 0;
+            while (i < time && engine.isStarted()){
+                engine.decreaseTorque();
+                if (speed > 0) {
+                    speed -= SPEED_DELTA;
+                    TripComputer.printOnDashboard(MSG_INCREASING_BRAKE, speed);
+                } else {
+                    stopCar();
+                    TripComputer.printOnDashboard(MSG_CAR_STOPPED);
+                }
+                i++;
             }
+        } catch (CarException e){
+            criticalStopCar();
+        }
+    }
+
+    public void changeEngineOnReleaseBrake(int time) {
+        try {
+            int i = 0;
+            while (i < time && engine.isStarted()){
+                if (brake > 0 && speed > 0) {
+                    speed -= SPEED_DELTA;
+                    engine.decreaseTorque();
+                }
+                TripComputer.printOnDashboard(MSG_DECREASING_BRAKE, speed);
+                if (speed == 0){
+                    stopCar();
+                    TripComputer.printOnDashboard(MSG_CAR_STOPPED);
+                }
+                i++;
+            }
+        } catch (CarException e){
+            criticalStopCar();
         }
     }
     //==================================================
 
+    public boolean isStarted() {
+        return engine.isStarted();
+    }
+
     public void setTripComputer(TripComputer tripComputer) {
         this.tripComputer = tripComputer;
+    }
+
+    public TripComputer getTripComputer() {
+        return tripComputer;
     }
 
     public void setBody(Body body) {
@@ -277,12 +339,12 @@ public class Car implements ControlCar {
         this.clearance = clearance;
     }
 
-    public boolean isPower() {
-        return power;
-    }
-
     public ControlTransmission getTransmission() {
         return transmission;
+    }
+
+    public ControlEngine getEngine() {
+        return engine;
     }
 
     public void setWheels(Map<Location, Wheel> wheels) {
@@ -361,6 +423,9 @@ public class Car implements ControlCar {
         }
 
         public Car build(){
+            car.body.subscribe(DOOR_OPEN, car.getTripComputer());
+            car.body.subscribe(DOOR_CLOSE, car.getTripComputer());
+            car.engine.subscribe(CRITICAL_FUEL, car.getTripComputer());
             return car;
         }
     }

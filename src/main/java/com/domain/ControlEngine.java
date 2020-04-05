@@ -1,21 +1,20 @@
 package com.domain;
 
 import com.constants.FuelLevel;
+import com.exception.CarException;
 
 public interface ControlEngine extends Subscribe{
     boolean isStarted();
-    boolean startOn();
+    void startOn() throws CarException;
     boolean startOff();
-
-    void increaseTorque();
-    void decreaseTorque();
-    float getFuel();
+    void increaseTorque() throws CarException;
+    void decreaseTorque() throws CarException;
     FuelLevel checkFuelLevel();
     void consumeFuel();
     float getFuelConsumption();
-
+    float refuel(float fuel);
+    float refuel();
+    float getFuel();
     int getTorque();
-
-    void refuel(float fuel);
-    void refuel();
+    float getMaxFuelLevel();
 }
