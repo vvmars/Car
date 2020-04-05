@@ -8,7 +8,6 @@ import com.domain.impl.TripComputer;
 import com.domain.impl.Wheel;
 import java.util.Map;
 import java.util.function.BiPredicate;
-
 import static com.constants.Constants.*;
 import static com.constants.Constants.MSG_PRINT_STATE;
 import static com.constants.Drive.*;

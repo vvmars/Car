@@ -2,11 +2,13 @@ package com.domain.impl;
 
 import com.domain.ControlEngine;
 import com.exception.CarException;
+import org.apache.log4j.Logger;
 import java.util.*;
 import static com.constants.Constants.ERROR_FUEL_CRITICAL_LEVEL;
 import static com.constants.FuelLevel.CRITICAL;
 
 public abstract class Engine implements ControlEngine {
+    final static Logger log = Logger.getLogger(Engine.class);
     private boolean started;
     //HP
     protected final int power;
@@ -28,8 +30,10 @@ public abstract class Engine implements ControlEngine {
 
     @Override
     public void startOn() throws CarException {
-        if (checkFuelLevel() == CRITICAL)
+        if (checkFuelLevel() == CRITICAL) {
+            log.error("Not enough fuel");
             throw new CarException(ERROR_FUEL_CRITICAL_LEVEL);
+        }
         else {
             increaseTorque();
             started = true;
@@ -47,6 +51,7 @@ public abstract class Engine implements ControlEngine {
             torque += TORQUE_DELTA;
         consumeFuel();
         if (checkFuelLevel() == CRITICAL) {
+            log.error("Not enough fuel");
             started = false;
             torque = 0;
             throw new CarException(ERROR_FUEL_CRITICAL_LEVEL);
@@ -59,6 +64,7 @@ public abstract class Engine implements ControlEngine {
             torque -= TORQUE_DELTA;
         consumeFuel();
         if (checkFuelLevel() == CRITICAL) {
+            log.error("Not enough fuel");
             started = false;
             torque = 0;
             throw new CarException(ERROR_FUEL_CRITICAL_LEVEL);

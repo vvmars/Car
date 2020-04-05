@@ -35,6 +35,11 @@ public class Transmission implements ControlTransmission {
     }
 
     @Override
+    public boolean isAutomatic() {
+        return automatic;
+    }
+
+    @Override
     public void setTransmission(NTransmission transmission) {
         this.transmission = transmission;
     }

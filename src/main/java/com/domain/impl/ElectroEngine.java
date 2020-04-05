@@ -1,6 +1,8 @@
 package com.domain.impl;
 
 import com.constants.FuelLevel;
+import org.apache.log4j.Logger;
+import static java.lang.String.format;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.Objects;
@@ -8,6 +10,7 @@ import java.util.Objects;
 import static com.constants.FuelLevel.*;
 
 public class ElectroEngine extends Engine {
+    final static Logger log = Logger.getLogger(ElectroEngine.class);
     private float chargeLevel;
     private final float maxChargeLevel;
 
@@ -30,6 +33,7 @@ public class ElectroEngine extends Engine {
     @Override
     public void consumeFuel(){
         chargeLevel -= getFuelConsumption()/60;
+        log.info(format("Consume fuel - %s", chargeLevel));
     }
 
     /**

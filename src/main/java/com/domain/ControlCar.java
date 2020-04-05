@@ -2,6 +2,7 @@ package com.domain;
 
 import com.constants.Location;
 import com.domain.impl.Body;
+import com.exception.CarException;
 
 public interface ControlCar {
     void insertKey();
@@ -21,9 +22,10 @@ public interface ControlCar {
     void upGear();
     void downGear();
 
-    //PutCarInPark
-    //void putCarInDrive();
-    //PutCarInReverse
+    void putCarInPark();
+    void putCarInDrive();
+    void putCarInReverse();
+
     void checkReadiness();
 
     void diagnostic(boolean showAll);

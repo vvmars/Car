@@ -6,6 +6,9 @@ import com.constants.Location;
 import com.constants.VehicleLight;
 import com.domain.*;
 import com.domain.EventListener;
+import org.apache.log4j.Logger;
+import org.apache.log4j.spi.LoggerFactory;
+
 import java.util.*;
 import static com.constants.Constants.WARNING_DOOR_LOCKED_OPEN;
 import static com.constants.Constants.MSG_DOOR_OPEN;
@@ -15,6 +18,8 @@ import static com.constants.LightStatus.ON;
 import static java.lang.String.format;
 
 public class Body implements ControlBody, Subscribe {
+    final static Logger log = Logger.getLogger(Body.class);
+
     private Map<Location, Door> doors;
     private Map<VehicleLight, CarLight> carLights;
 
@@ -30,6 +35,7 @@ public class Body implements ControlBody, Subscribe {
 
     @Override
     public boolean checkLights(){
+        log.info("Checking light status");
         return carLights.entrySet().stream()
                 .map(e -> {
                     LightStatus state = e.getValue().getStatus();
@@ -84,8 +90,10 @@ public class Body implements ControlBody, Subscribe {
     public void openDoorOutside(Location location) {
         Door door = doors.get(location);
         if (door.isStatusLock()) {
+            log.info("Open locked door outside");
             notifyListeners(format(WARNING_DOOR_LOCKED_OPEN, door.getLocation().getValue(), "locked"));
         } else {
+            log.info("Open unlocked door outside");
             door.openDoor();
             notifyListeners(format(WARNING_DOOR_LOCKED_OPEN, door.getLocation().getValue(), "unlocked"));
         }

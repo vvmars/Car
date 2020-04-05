@@ -4,18 +4,21 @@ import com.constants.Location;
 import com.constants.NTransmission;
 import com.domain.*;
 import com.exception.CarException;
+import org.apache.log4j.Logger;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.BiPredicate;
 import static com.constants.Constants.*;
 import static com.constants.Event.*;
-import static com.constants.NTransmission.NEUTRAL;
+import static com.constants.NTransmission.*;
 import static com.constants.VehicleLight.DAYTIME_RUNNING;
 import static com.helper.Utils.*;
 import static java.lang.String.format;
 
 public class Car implements ControlCar {
+    final static Logger log = Logger.getLogger(Car.class);
     private TripComputer tripComputer;
     private ControlBody body;
     private ControlEngine engine;
@@ -95,6 +98,7 @@ public class Car implements ControlCar {
                 body.switchOnLight(DAYTIME_RUNNING);
                 TripComputer.printOnDashboard(MSG_LIGHT_SWITCH_ON, DAYTIME_RUNNING.getValue());
             } catch (CarException e){
+                log.error("The car was stopped: critical level of fuel");
                 criticalStopCar();
             }
     }
@@ -189,6 +193,70 @@ public class Car implements ControlCar {
     }
 
     @Override
+    public void putCarInPark(){
+        if (transmission.isAutomatic()){
+            if (!engine.isStarted())
+                TripComputer.printOnDashboard(WARING_IN_PARK_NOT_STARTED,"'in Park'");
+            else if (tripComputer.getSpeed() != 0)
+                TripComputer.printOnDashboard(ERROR_IN_PARK_MOVING, "'in Park'");
+            else
+                transmission.setTransmission(IN_PARK);
+        } else
+            TripComputer.printOnDashboard(WARING_IN_PARK_NOT_ACCESSIBLE, "'in Park'");
+    }
+
+    @Override
+    public void putCarInDrive() {
+        if (transmission.isAutomatic()){
+            if (!engine.isStarted())
+                TripComputer.printOnDashboard(WARING_IN_PARK_NOT_STARTED, "'in Drive'");
+            else if (tripComputer.getSpeed() != 0)
+                TripComputer.printOnDashboard(ERROR_IN_PARK_MOVING, "'in Drive'");
+            else {
+                try {
+                    transmission.setTransmission(IN_DRIVE);
+                    engine.increaseTorque();
+                    if (tripComputer.getSpeed() < tripComputer.getMaxSpeed()) {
+                        if (tripComputer.speedUp() == TripComputer.getSpeedDelta())
+                            startRotated(wheels);
+                        NTransmission nextTransmission = transmission.getNextTransmission(engine.getTorque());
+                        if (nextTransmission != transmission.getTransmission())
+                            transmission.setTransmission(nextTransmission);
+                        TripComputer.printOnDashboard(MSG_TRANSMISSION_CHANGE, nextTransmission.getValue());
+                    } else
+                        TripComputer.printOnDashboard(WARNING_MAX_SPEED);
+                } catch (CarException e){
+                    log.error("The car was stopped: critical level of fuel");
+                    criticalStopCar();
+                }
+            }
+        } else
+            TripComputer.printOnDashboard(WARING_IN_PARK_NOT_ACCESSIBLE, "'in Drive'");
+    }
+
+    @Override
+    public void putCarInReverse() {
+        if (!engine.isStarted())
+            TripComputer.printOnDashboard(WARING_IN_PARK_NOT_STARTED, "'in Reverse'");
+        else if (tripComputer.getSpeed() != 0)
+            TripComputer.printOnDashboard(ERROR_IN_PARK_MOVING, "'in Reverse'");
+        else {
+            try {
+                transmission.setTransmission(REVERSE);
+                engine.increaseTorque();
+                if (tripComputer.getSpeed() < tripComputer.getMaxSpeed()) {
+                    if (tripComputer.speedUp() == TripComputer.getSpeedDelta())
+                        startRotated(wheels);
+                } else
+                    TripComputer.printOnDashboard(WARNING_MAX_SPEED);
+            } catch (CarException e){
+                log.error("The car was stopped: critical level of fuel");
+                criticalStopCar();
+            }
+        }
+    }
+
+    @Override
     public void checkReadiness(){
         TripComputer.printOnDashboard(MSG_CHECKING_STATUS);
         if (body.checkLights())
@@ -275,6 +343,7 @@ public class Car implements ControlCar {
                 i++;
             }
         } catch (CarException e){
+            log.error("The car was stopped: critical level of fuel");
             criticalStopCar();
         }
     }
@@ -298,6 +367,7 @@ public class Car implements ControlCar {
                 i++;
             }
         } catch (CarException e){
+            log.error("The car was stopped: critical level of fuel");
             criticalStopCar();
         }
     }
@@ -319,6 +389,7 @@ public class Car implements ControlCar {
                 i++;
             }
         } catch (CarException e){
+            log.error("The car was stopped: critical level of fuel");
             criticalStopCar();
         }
     }
@@ -341,6 +412,7 @@ public class Car implements ControlCar {
                 i++;
             }
         } catch (CarException e){
+            log.error("The car was stopped: critical level of fuel");
             criticalStopCar();
         }
     }

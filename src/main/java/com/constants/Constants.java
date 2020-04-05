@@ -15,6 +15,9 @@ public class Constants {
     public static final String ERROR_TURN_KEY = "You are trying to turn key but it isn't here";
     public static final String ERROR_TURN_KEY_STARTED = "You are trying to turn key but engine was already started";
     public static final String MSG_CAR_STOPPED = "The car's stopped";
+    public static final String WARING_IN_PARK_NOT_ACCESSIBLE = "The function %s is not accessible here";
+    public static final String WARING_IN_PARK_NOT_STARTED = "You just tried to put the car %s while it was not started";
+    public static final String ERROR_IN_PARK_MOVING = "You just tried to put the car %s while it was moving forward";
 
     public static final String MSG_CHECKING_STATUS = "checking status ...";
     public static final String MSG_LIGHT_OK = "* light - OK";
