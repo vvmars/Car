@@ -113,9 +113,10 @@ public class Car implements ControlCar {
 
     @Override
     public void releaseBrake(int time) {
-        if (brake > 0)
+        if (brake > 0) {
             brake -= BRAKE_DELTA;
-        changeEngineOnReleaseBrake(time);
+            changeEngineOnReleaseBrake(time);
+        }
     }
 
     @Override
@@ -248,15 +249,17 @@ public class Car implements ControlCar {
 
     private void changeEngineOnReleaseGas(int time) {
         try {
+            int currSpeed;
             int i = 0;
             while (i < time && engine.isStarted()){
+                currSpeed = speed;
                 engine.decreaseTorque();
                 if (canSpeedUp.test(transmission, engine))
                     TripComputer.printOnDashboard(WARNING_TRANSMISSION_NEUTRAL);
                 else if (speed > 0) {
                     speed -= SPEED_DELTA;
                     TripComputer.printOnDashboard(MSG_DECREASING_GAS, speed);
-                } else {
+                } else if (currSpeed != speed && speed == 0){
                     stopCar();
                     TripComputer.printOnDashboard(MSG_CAR_STOPPED);
                 }
@@ -269,13 +272,15 @@ public class Car implements ControlCar {
 
     private void changeEngineOnPressBrake(int time){
         try {
+            int currSpeed;
             int i = 0;
             while (i < time && engine.isStarted()){
+                currSpeed = speed;
                 engine.decreaseTorque();
                 if (speed > 0) {
                     speed -= SPEED_DELTA;
                     TripComputer.printOnDashboard(MSG_INCREASING_BRAKE, speed);
-                } else {
+                } else if (currSpeed != speed && speed == 0){
                     stopCar();
                     TripComputer.printOnDashboard(MSG_CAR_STOPPED);
                 }
@@ -288,14 +293,16 @@ public class Car implements ControlCar {
 
     public void changeEngineOnReleaseBrake(int time) {
         try {
+            int currSpeed;
             int i = 0;
             while (i < time && engine.isStarted()){
-                if (brake > 0 && speed > 0) {
+                currSpeed = speed;
+                if (speed > 0) {
                     speed -= SPEED_DELTA;
                     engine.decreaseTorque();
+                    TripComputer.printOnDashboard(MSG_DECREASING_BRAKE, speed);
                 }
-                TripComputer.printOnDashboard(MSG_DECREASING_BRAKE, speed);
-                if (speed == 0){
+                if (currSpeed != speed && speed == 0){
                     stopCar();
                     TripComputer.printOnDashboard(MSG_CAR_STOPPED);
                 }

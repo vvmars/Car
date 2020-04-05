@@ -15,13 +15,15 @@ public class Application {
         car.upGear();
         car.pressGas(1);
         car.releaseGas(1);
-        car.pressGas(7);
-
+        car.pressGas(9);
+        car.diagnostic(false);
         car.refuel(10);
         car.turnOnKey();
         car.refuel();
         car.diagnostic(false);
-
+        car.upGear();
+        car.pressGas(2);
+        car.upGear();
         car.pressGas(2);
         car.pressBrake(1);
         car.releaseBrake(1);

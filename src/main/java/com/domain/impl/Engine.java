@@ -14,7 +14,8 @@ public abstract class Engine implements ControlEngine {
     protected final int power;
     //0 - MAX_TORQUE
     protected int torque;
-    private static final float MAX_TORQUE = 3500;
+    private static final float TORQUE_MAX = 3500;
+    private static final float TORQUE_DELTA = 500;
     protected final Map<Integer, Integer> fuelConsumption;
     //private heater;
     //private oilLevel;
@@ -47,10 +48,9 @@ public abstract class Engine implements ControlEngine {
 
     @Override
     public void increaseTorque() throws CarException {
-        if (torque < MAX_TORQUE) {
-            torque += 500;
-            consumeFuel();
-        }
+        if (torque < TORQUE_MAX)
+            torque += TORQUE_DELTA;
+        consumeFuel();
         if (checkFuelLevel() == CRITICAL) {
             started = false;
             torque = 0;
@@ -62,10 +62,9 @@ public abstract class Engine implements ControlEngine {
 
     @Override
     public void decreaseTorque() throws CarException {
-        if (torque > 0) {
-            torque -= 500;
-            consumeFuel();
-        }
+        if (torque > TORQUE_DELTA)
+            torque -= TORQUE_DELTA;
+        consumeFuel();
         if (checkFuelLevel() == CRITICAL) {
             started = false;
             torque = 0;
