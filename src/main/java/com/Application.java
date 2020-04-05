@@ -7,7 +7,13 @@ import java.util.Scanner;
 
 public class Application {
     public static void main(String[] args) throws CarException {
-        ControlCar car = CarFactory.buildCar("Sedan");
+        ControlCar /*car = CarFactory.buildCar("Qashqai");
+        moving(car);*/
+        car = CarFactory.buildCar("Tesla");
+        moving(car, 10000);
+    }
+
+    private static void moving(ControlCar car, int fuel){
         car.insertKey();
         car.turnOnKey();
         car.pressGas(1);

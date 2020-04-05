@@ -1,6 +1,7 @@
 package com.domain;
 
 import com.domain.impl.Body;
+import com.domain.impl.CarLight;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static com.constants.LightStatus.*;

@@ -7,22 +7,28 @@ public class Wheel implements ControlWheel {
     private Location location;
     private int innerRadius;
     private int outerRadius;
-    //0 - maxAngle
-    private int angle;
-    private boolean rotated;
+    //0 - MAX_ANGLE
+    private int angle = 0;
+    private boolean rotated = false;
     private static final int ANGLE_DELTA = 5;
-    private static final int maxAngle = 45;
+    private static final int MAX_ANGLE = 45;
+
+    public Wheel(Location location, int innerRadius, int outerRadius){
+        this.location = location;
+        this.innerRadius = innerRadius;
+        this.outerRadius = outerRadius;
+    }
 
     //==========================================================
     @Override
     public void increaseAngle(){
-        if (angle < maxAngle)
+        if (angle < MAX_ANGLE)
             angle += ANGLE_DELTA;
     }
 
     @Override
     public void decreaseAngle(){
-        if (angle > -maxAngle)
+        if (angle > -MAX_ANGLE)
             angle -= ANGLE_DELTA;
     }
 
@@ -30,38 +36,15 @@ public class Wheel implements ControlWheel {
     public void resetAngle(){
         angle = 0;
     }
+
     //==========================================================
 
     public Location getLocation() {
         return location;
     }
 
-    public void setLocation(Location location) {
-        this.location = location;
-    }
-
-    public int getInnerRadius() {
-        return innerRadius;
-    }
-
-    public void setInnerRadius(int innerRadius) {
-        this.innerRadius = innerRadius;
-    }
-
-    public int getOuterRadius() {
-        return outerRadius;
-    }
-
-    public void setOuterRadius(int outerRadius) {
-        this.outerRadius = outerRadius;
-    }
-
     public int getAngle() {
         return angle;
-    }
-
-    public void setAngle(int angle) {
-        this.angle = angle;
     }
 
     public boolean isRotated() {
@@ -79,55 +62,28 @@ public class Wheel implements ControlWheel {
         return new Builder();
     }
 
-    public static Builder builder(Car.Builder carBuilder) {
-        return new Builder(carBuilder);
-    }
-
     public static class Builder{
-        private Wheel wheel;
-        private Car.Builder carBuilder;
-
-        Builder(){
-            wheel = new Wheel();
-        }
-
-        Builder(Car.Builder carBuilder){
-            this();
-            this.carBuilder = carBuilder;
-        }
+        private Location location;
+        private int innerRadius;
+        private int outerRadius;
 
         public Builder withLocation(Location location){
-            wheel.location = location;
+            this.location = location;
             return this;
         }
 
         public Builder withInnerRadius(int innerRadius){
-            wheel.innerRadius = innerRadius;
+            this.innerRadius = innerRadius;
             return this;
         }
 
         public Builder withOuterRadius(int outerRadius){
-            wheel.outerRadius = outerRadius;
-            return this;
-        }
-
-        public Builder withAngle(int angle){
-            wheel.angle = angle;
-            return this;
-        }
-
-        public Builder withRotated(boolean rotated){
-            wheel.rotated = rotated;
+            this.outerRadius = outerRadius;
             return this;
         }
 
         public Wheel build(){
-            return wheel;
-        }
-
-        public Car.Builder done(){
-            carBuilder.withWheel(wheel.location, wheel);
-            return carBuilder;
+            return new Wheel(location, innerRadius, outerRadius);
         }
     }
 }

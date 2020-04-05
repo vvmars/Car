@@ -4,11 +4,10 @@ import com.constants.Drive;
 import com.constants.Location;
 import com.constants.NTransmission;
 import com.domain.ControlEngine;
-import com.domain.TripComputer;
+import com.domain.impl.TripComputer;
 import com.domain.impl.Wheel;
 import java.util.Map;
 import java.util.function.BiPredicate;
-import java.util.function.Consumer;
 
 import static com.constants.Constants.*;
 import static com.constants.Constants.MSG_PRINT_STATE;

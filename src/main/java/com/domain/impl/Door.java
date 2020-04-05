@@ -1,15 +1,18 @@
-package com.domain;
+package com.domain.impl;
 
 import com.constants.Location;
-import com.domain.impl.Body;
-
 import java.util.Objects;
 
 public class Door {
     private Location location;
-    private boolean statusOpen;
-    private boolean statusLock;
+    private boolean statusOpen = false;
+    private boolean statusLock = false;
 
+    public Door(Location location){
+        this.location = location;
+    }
+
+    //==========================================================
     public Location getLocation() {
         return location;
     }
@@ -74,45 +77,16 @@ public class Door {
         return new Builder();
     }
 
-    public static Builder builder(Body.Builder bodyBuilder) {
-        return new Builder(bodyBuilder);
-    }
-
     public static class Builder{
-        private Door door;
-        private Body.Builder bodyBuilder;
-
-        Builder(){
-            door = new Door();
-        }
-
-        Builder(Body.Builder bodyBuilder){
-            this();
-            this.bodyBuilder = bodyBuilder;
-        }
+        private Location location;
 
         public Builder withLocation(Location location){
-            door.location = location;
-            return this;
-        }
-
-        public Builder withStatusOpen(boolean statusOpen){
-            door.statusOpen = statusOpen;
-            return this;
-        }
-
-        public Builder withStatusLock(boolean statusLock){
-            door.statusLock = statusLock;
+            this.location = location;
             return this;
         }
 
         public Door build(){
-            return door;
-        }
-
-        public Body.Builder done(){
-            bodyBuilder.withDoor(door.location, door);
-            return bodyBuilder;
+            return new Door(location);
         }
     }
 }

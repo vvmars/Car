@@ -1,4 +1,4 @@
-package com.domain;
+package com.domain.impl;
 
 public class ClimateControl {
 }

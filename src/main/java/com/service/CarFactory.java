@@ -2,17 +2,13 @@ package com.service;
 
 import com.constants.Location;
 import com.domain.*;
-import com.domain.impl.Car;
-import com.domain.impl.PetrolEngine;
-import com.domain.impl.Wheel;
+import com.domain.impl.*;
 import com.exception.CarException;
-
 import java.util.Arrays;
 import java.util.Map;
 import java.util.stream.Collectors;
 import static com.constants.Drive.*;
 import static com.constants.LightStatus.*;
-import static com.constants.NTransmission.*;
 import static com.constants.VehicleLight.*;
 import static java.lang.String.format;
 
@@ -20,7 +16,8 @@ public class CarFactory {
 
     public static ControlCar buildCar(String model) throws CarException {
         switch(model){
-            case "Sedan": return buildSedan();
+            case "Qashqai": return buildSedan();
+            case "Tesla": return buildTesla();
             default: throw new CarException(format("Model %s was not implemented", model));
         }
     }
@@ -30,23 +27,48 @@ public class CarFactory {
         engine.setPetrolLevel(2);
 
         return Car.builder()
-                .withBody()
-                    .withDoors(doorsBuilder())
-                    .withCarLight(HEAD, new CarLight(OFF))
-                    .withCarLight(HAZARD, new CarLight(OFF))
-                    .withCarLight(BRAKE, new CarLight(OFF))
-                    .withCarLight(DAYTIME_RUNNING, new CarLight(OFF))
-                    .withCarLight(LEFT_SIGNAL, new CarLight(OFF))
-                    .withCarLight(RIGHT_SIGNAL, new CarLight(OFF))
-                    .done()
+                .withBody(Body.builder()
+                        .withDoors(doorsBuilder())
+                        .withCarLight(HEAD, new CarLight(OFF))
+                        .withCarLight(HAZARD, new CarLight(OFF))
+                        .withCarLight(BRAKE, new CarLight(OFF))
+                        .withCarLight(DAYTIME_RUNNING, new CarLight(OFF))
+                        .withCarLight(LEFT_SIGNAL, new CarLight(OFF))
+                        .withCarLight(RIGHT_SIGNAL, new CarLight(OFF))
+                        .build())
                 .withEngine(engine)
-                .withTransmission()
-                    .withAutomatic(false)
-                    .withTransmission(NEUTRAL)
-                    .withDrive(FRONT)
-                    .done()
+                .withTransmission(Transmission.builder()
+                        .withAutomatic(false)
+                        .withDrive(FRONT)
+                        .build())
                 .withWheels(wheelsBuilder(14, 16))
                 .withMaxSpeed(160)
+                .withClearance(15)
+                .build();
+    }
+
+    private static Car buildTesla(){
+        ElectroEngine engine = new ElectroEngine(10000, 120);
+        engine.setChargeLevel(500);
+
+        return Car.builder()
+                .withBody(Body.builder()
+                        .withDoors(doorsBuilder())
+                        .withCarLight(HEAD, new CarLight(OFF))
+                        .withCarLight(HAZARD, new CarLight(OFF))
+                        .withCarLight(BRAKE, new CarLight(OFF))
+                        .withCarLight(FOG, new CarLight(OFF))
+                        .withCarLight(DAYTIME_RUNNING, new CarLight(OFF))
+                        .withCarLight(LEFT_SIGNAL, new CarLight(OFF))
+                        .withCarLight(RIGHT_SIGNAL, new CarLight(OFF))
+                        .build())
+                .withEngine(engine)
+                .withTransmission(Transmission.builder()
+                        .withAutomatic(true)
+                        .withDrive(ALL_WHEEL)
+                        .build())
+                .withWheels(wheelsBuilder(14, 16))
+                .withMaxSpeed(190)
                 .withClearance(15)
                 .build();
     }
@@ -56,8 +78,6 @@ public class CarFactory {
                 .map(location ->
                         Door.builder()
                                 .withLocation(location)
-                                .withStatusLock(false)
-                                .withStatusOpen(true)
                                 .build())
                 .collect(Collectors.toMap(Door::getLocation, door -> door));
     }
@@ -69,8 +89,6 @@ public class CarFactory {
                                 .withLocation(location)
                                 .withInnerRadius(innerRadius)
                                 .withOuterRadius(outerRadius)
-                                .withAngle(0)
-                                .withRotated(false)
                                 .build())
                 .collect(Collectors.toMap(Wheel::getLocation, wheel -> wheel));
     }

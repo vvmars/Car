@@ -2,6 +2,7 @@ package com.constants;
 
 public enum NTransmission {
     NEUTRAL("neutral"),
+    IN_PARK("in park"),
     FIRST("first"),
     SECOND("second"),
     THIRD("third"),

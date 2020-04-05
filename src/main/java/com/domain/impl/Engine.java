@@ -104,8 +104,4 @@ public abstract class Engine implements ControlEngine {
     public void setTorque(int torque) {
         this.torque = torque;
     }
-
-    /*public Map<Integer, Integer> getFuelConsumption() {
-        return fuelConsumption;
-    }*/
 }

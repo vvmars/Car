@@ -21,16 +21,14 @@ public class Car implements ControlCar {
     private ControlEngine engine;
     private ControlTransmission transmission;
     private Map<Location, Wheel> wheels;
-
     //0-100%
-    private int gas;
+    private int gas = 0;
     //0-100%
-    private int brake;
-
+    private int brake = 0;
     private boolean power;
     //0 - maxSpeed
-    private int speed;
-    private int maxSpeed;
+    private int speed = 0;
+    private final int maxSpeed;
     private int clearance;
     private int seats;
 
@@ -42,11 +40,22 @@ public class Car implements ControlCar {
             (transmission, engine) -> transmission.getTransmission() == NEUTRAL &&
                     engine.isStarted();
 
-    public Car (){
-        power = false;
-        wheels = new HashMap<>();
-        body = new Body();
-        tripComputer = new TripComputer(this);
+    public Car (ControlBody body, ControlEngine engine,
+                ControlTransmission transmission, Map<Location, Wheel> wheels, int maxSpeed,
+                int clearance, int seats){
+        this.power = false;
+        this.tripComputer = new TripComputer(this);
+        this.body = body;
+        this.engine = engine;
+        this.transmission = transmission;
+        this.wheels = wheels;
+        this.maxSpeed = maxSpeed;
+        this.clearance = clearance;
+        this.seats = seats;
+
+        body.subscribe(DOOR_OPEN, tripComputer);
+        body.subscribe(DOOR_CLOSE, tripComputer);
+        engine.subscribe(CRITICAL_FUEL, tripComputer);
         //body.subscribe(DOOR_OPEN, tripComputer);
     }
 
@@ -54,40 +63,59 @@ public class Car implements ControlCar {
 
     @Override
     public void insertKey(){
-        power = true;
-        TripComputer.printOnDashboard(MSG_SEPARATOR1);
-        TripComputer.printOnDashboard(MSG_GREETING);
-        TripComputer.printOnDashboard(MSG_SEPARATOR1);
-        TripComputer.printOnDashboard(MSG_INSERT_KEY);
-        checkReadiness();
-    }
-
-    @Override
-    public void removeKey(){
-        power = false;
-        System.out.println("Game over!");
-    }
-
-    @Override
-    public void turnOnKey(){
-        try {
-            engine.startOn();
-            TripComputer.printOnDashboard(MSG_ENGINE_START);
-            body.switchOnLight(DAYTIME_RUNNING);
-            TripComputer.printOnDashboard(MSG_LIGHT_SWITCH_ON, DAYTIME_RUNNING.getValue());
-        } catch (CarException e){
-            criticalStopCar();
+        if (power)
+            TripComputer.printOnDashboard(ERROR_INSERT_KEY);
+        else {
+            power = true;
+            TripComputer.printOnDashboard(MSG_SEPARATOR1);
+            TripComputer.printOnDashboard(MSG_GREETING);
+            TripComputer.printOnDashboard(MSG_SEPARATOR1);
+            TripComputer.printOnDashboard(MSG_INSERT_KEY);
+            checkReadiness();
         }
     }
 
     @Override
+    public void removeKey(){
+        if (!power)
+            TripComputer.printOnDashboard(ERROR_REMOVE_KEY);
+        else if (speed > 0)
+            TripComputer.printOnDashboard(ERROR_REMOVE_KEY_MOVING);
+        else {
+            power = false;
+            System.out.println(" ****** GAME OVER! ******");
+        }
+    }
+
+    @Override
+    public void turnOnKey(){
+        if (!power)
+            TripComputer.printOnDashboard(ERROR_TURN_KEY);
+        else if (engine.isStarted())
+            TripComputer.printOnDashboard(ERROR_TURN_KEY_STARTED);
+        else
+            try {
+                engine.startOn();
+                TripComputer.printOnDashboard(MSG_ENGINE_START);
+                body.switchOnLight(DAYTIME_RUNNING);
+                TripComputer.printOnDashboard(MSG_LIGHT_SWITCH_ON, DAYTIME_RUNNING.getValue());
+            } catch (CarException e){
+                criticalStopCar();
+            }
+    }
+
+    @Override
     public void turnBackKey(){
-        if (speed != 0)
+        if (!power)
+            TripComputer.printOnDashboard(ERROR, "you are trying to switch off engine while key isn't here!");
+        else if (speed != 0)
             TripComputer.printOnDashboard(ERROR, "you are trying to switch off engine while it is moving!");
-        engine.startOff();
-        TripComputer.printOnDashboard(MSG_ENGINE_STOP);
-        body.switchOffLight();
-        TripComputer.printOnDashboard(MSG_ALL_LIGHT_SWITCH_OFF);
+        else {
+            engine.startOff();
+            TripComputer.printOnDashboard(MSG_ENGINE_STOP);
+            body.switchOffLight();
+            TripComputer.printOnDashboard(MSG_ALL_LIGHT_SWITCH_OFF);
+        }
     }
 
     @Override
@@ -314,33 +342,33 @@ public class Car implements ControlCar {
     }
     //==================================================
 
-    public boolean isStarted() {
+    /*public boolean isStarted() {
         return engine.isStarted();
-    }
+    }*/
 
-    public void setTripComputer(TripComputer tripComputer) {
+    /*public void setTripComputer(TripComputer tripComputer) {
         this.tripComputer = tripComputer;
-    }
+    }*/
 
-    public TripComputer getTripComputer() {
+    /*public TripComputer getTripComputer() {
         return tripComputer;
-    }
+    }*/
 
-    public void setBody(Body body) {
+    /*public void setBody(Body body) {
         this.body = body;
-    }
+    }*/
 
-    public void setEngine(Engine engine) {
+    /*public void setEngine(Engine engine) {
         this.engine = engine;
-    }
+    }*/
 
-    public void setTransmission(Transmission transmission) {
+    /*public void setTransmission(Transmission transmission) {
         this.transmission = transmission;
-    }
+    }*/
 
-    public void setMaxSpeed(int maxSpeed) {
+/*    public void setMaxSpeed(int maxSpeed) {
         this.maxSpeed = maxSpeed;
-    }
+    }*/
 
     public void setClearance(int clearance) {
         this.clearance = clearance;
@@ -379,61 +407,56 @@ public class Car implements ControlCar {
     }
 
     public static class Builder{
-        private Car car;
+        private ControlBody body;
+        private ControlEngine engine;
+        private ControlTransmission transmission;
+        private Map<Location, Wheel> wheels;
+        private int maxSpeed;
+        private int clearance;
+        private int seats;
 
         Builder(){
-            car = new Car();
+            this.wheels = new HashMap<>();
         }
 
-        public void withBody(Body body){
-            car.setBody(body);
-        }
-
-        public Body.Builder withBody(){
-            return Body.builder(this);
+        public Builder withBody(Body body){
+            this.body = body;
+            return this;
         }
 
         public Builder withEngine(Engine engine){
-            car.setEngine(engine);
+            this.engine = engine;
             return this;
         }
 
-        public void withTransmission(Transmission transmission){
-            car.setTransmission(transmission);
-        }
-
-        public Transmission.Builder withTransmission(){
-            return Transmission.builder(this);
-        }
-
-        public void withWheel(Location location, Wheel wheel){
-            car.getWheels().put(location, wheel);
+        public Builder withTransmission(Transmission transmission){
+            this.transmission = transmission;
+            return this;
         }
 
         public Builder withWheels(Map<Location, Wheel> wheels){
-            car.setWheels(wheels);
+            this.wheels = wheels;
             return this;
         }
 
-        public Wheel.Builder withWheels(){
-            return Wheel.builder(this);
-        }
-
         public Builder withMaxSpeed(int maxSpeed){
-            car.setMaxSpeed(maxSpeed);
+            this.maxSpeed = maxSpeed;
             return this;
         }
 
         public Builder withClearance(int clearance){
-            car.setClearance(clearance);
+            this.clearance = clearance;
+            return this;
+        }
+
+        public Builder withSeats(int seats){
+            this.seats = seats;
             return this;
         }
 
         public Car build(){
-            car.body.subscribe(DOOR_OPEN, car.getTripComputer());
-            car.body.subscribe(DOOR_CLOSE, car.getTripComputer());
-            car.engine.subscribe(CRITICAL_FUEL, car.getTripComputer());
-            return car;
+            return new Car(body, engine, transmission,
+                    wheels, maxSpeed, clearance, seats);
         }
     }
 }

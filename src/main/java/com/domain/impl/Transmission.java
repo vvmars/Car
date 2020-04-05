@@ -11,7 +11,17 @@ public class Transmission implements ControlTransmission {
     private NTransmission transmission;
     private Drive drive;
 
+    public Transmission(boolean automatic, Drive drive){
+        this.automatic = automatic;
+        this.drive = drive;
+        if (automatic)
+            transmission = IN_PARK;
+        else
+            transmission = NEUTRAL;
+    }
+
     //=======================================================================
+
     @Override
     public Drive getDrive() {
         return drive;
@@ -102,45 +112,22 @@ public class Transmission implements ControlTransmission {
         return new Builder();
     }
 
-    public static Builder builder(Car.Builder carBuilder) {
-        return new Builder(carBuilder);
-    }
-
     public static class Builder{
-        private Transmission transmission;
-        private Car.Builder carBuilder;
-
-        Builder(){
-            transmission = new Transmission();
-        }
-
-        Builder(Car.Builder carBuilder){
-            this();
-            this.carBuilder = carBuilder;
-        }
+        private boolean automatic;
+        private Drive drive;
 
         public Builder withAutomatic(boolean automatic){
-            transmission.automatic = automatic;
-            return this;
-        }
-
-        public Builder withTransmission(NTransmission transmission){
-            this.transmission.transmission = transmission;
+            this.automatic = automatic;
             return this;
         }
 
         public Builder withDrive(Drive drive){
-            transmission.drive = drive;
+            this.drive = drive;
             return this;
         }
 
         public Transmission build(){
-            return transmission;
-        }
-
-        public Car.Builder done(){
-            carBuilder.withTransmission(transmission);
-            return carBuilder;
+            return new Transmission(automatic, drive);
         }
     }
 }

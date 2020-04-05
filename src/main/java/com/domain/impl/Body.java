@@ -6,9 +6,7 @@ import com.constants.Location;
 import com.constants.VehicleLight;
 import com.domain.*;
 import com.domain.EventListener;
-
 import java.util.*;
-
 import static com.constants.Constants.MSG_DOOR_LOCKED_OPEN;
 import static com.constants.Constants.MSG_DOOR_OPEN;
 import static com.constants.Event.DOOR_OPEN;
@@ -25,6 +23,12 @@ public class Body implements ControlBody, Subscribe {
     public Body(){
         doors = new EnumMap<>(Location.class);
         carLights = new EnumMap<>(VehicleLight.class);
+        listeners = new EnumMap<>(Event.class);
+    }
+
+    public Body(Map<Location, Door> doors, Map<VehicleLight, CarLight> carLights){
+        this.doors = doors;
+        this.carLights = carLights;
         listeners = new EnumMap<>(Event.class);
     }
 
@@ -114,48 +118,26 @@ public class Body implements ControlBody, Subscribe {
         return new Builder();
     }
 
-    public static Builder builder(Car.Builder carBuilder) {
-        return new Builder(carBuilder);
-    }
-
     public static class Builder{
-        private Body body;
-        private Car.Builder carBuilder;
+        private Map<Location, Door> doors;
+        private Map<VehicleLight, CarLight> carLights;
 
-        Builder(){
-            body = new Body();
-        }
-
-        Builder(Car.Builder carBuilder){
-            this();
-            this.carBuilder = carBuilder;
-        }
-
-        public void withDoor(Location location, Door door){
-            body.addDoors(location, door);
-        }
-
-        public Door.Builder withDoors(){
-            return Door.builder(this);
+        public Builder(){
+            carLights = new EnumMap<>(VehicleLight.class);
         }
 
         public Builder withDoors(Map<Location, Door> doors){
-            body.setDoors(doors);
+            this.doors = doors;
             return this;
         }
 
         public Builder withCarLight(VehicleLight vehicleLight, CarLight carLight){
-            body.carLights.put(vehicleLight, carLight);
+            this.carLights.put(vehicleLight, carLight);
             return this;
         }
 
         public Body build(){
-            return body;
-        }
-
-        public Car.Builder done(){
-            carBuilder.withBody(body);
-            return carBuilder;
+            return new Body(doors, carLights);
         }
     }
 }

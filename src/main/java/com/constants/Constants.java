@@ -9,6 +9,11 @@ public class Constants {
     public static final String WARNING = "Warning, %s";
 
     public static final String MSG_INSERT_KEY = "The power On";
+    public static final String ERROR_INSERT_KEY = "You are trying to insert key but it is in place";
+    public static final String ERROR_REMOVE_KEY = "You are trying to remove key but it isn't here";
+    public static final String ERROR_REMOVE_KEY_MOVING = "You are trying to remove key but the cas is moving";
+    public static final String ERROR_TURN_KEY = "You are trying to turn key but it isn't here";
+    public static final String ERROR_TURN_KEY_STARTED = "You are trying to turn key but engine was already started";
     public static final String MSG_CAR_STOPPED = "The car's stopped";
 
     public static final String MSG_CHECKING_STATUS = "checking status ...";

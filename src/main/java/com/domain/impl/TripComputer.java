@@ -1,7 +1,8 @@
-package com.domain;
+package com.domain.impl;
 
 import com.constants.Event;
-import com.domain.impl.Car;
+import com.domain.EventListener;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -17,15 +18,24 @@ public class TripComputer implements EventListener {
     private static Map<Event, Consumer<String>> handlers;
     private static Consumer<String> notify;
     private static Consumer<String> stopEngine;
-    private static Car car;
+    //private static Car car;
+
+    /*private boolean powerCar;
+    private int speed = 0;
+    private int maxSpeed;
+    private boolean started;
+    private int powerEngine;
+    private int torque;
+    private float fuelLevel;
+    private float maxFuelLevel;*/
 
     static {
         notify = TripComputer::printOnDashboard;
-        stopEngine = msg -> {
+        /*stopEngine = msg -> {
             car.criticalStopCar();
             printOnDashboard(msg);
             printOnDashboard(format(MSG_FUEL_LEVEL, car.getEngine().getFuel(), car.getEngine().getFuel() * 100 / car.getEngine().getMaxFuelLevel()));
-            };
+            };*/
 
         handlers = new HashMap<>();
         handlers.put(DOOR_OPEN, notify);
@@ -34,7 +44,7 @@ public class TripComputer implements EventListener {
     }
 
     public TripComputer(Car currCar){
-        car = currCar;
+        //car = currCar;
     }
 
     public static void printOnDashboard(String msg, Object ... args){
