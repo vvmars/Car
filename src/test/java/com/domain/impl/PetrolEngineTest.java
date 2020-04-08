@@ -13,7 +13,7 @@ class PetrolEngineTest {
     private PetrolEngine engine;// = new PetrolEngine(60, 120);
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws CarException {
         engine = new PetrolEngine(60, 120);
         engine.setPetrolLevel(2);
     }

@@ -1,6 +1,7 @@
 package com.domain.impl;
 
 import com.constants.FuelLevel;
+import com.exception.CarException;
 import org.apache.log4j.Logger;
 import static java.lang.String.format;
 import java.util.Comparator;
@@ -13,20 +14,11 @@ public class ElectroEngine extends Engine {
     final static Logger log = Logger.getLogger(ElectroEngine.class);
     private float chargeLevel;
     private final float maxChargeLevel;
+    private static final String propFile = "electro.properties";
 
-    public ElectroEngine(float maxChargeLevel, int power){
-        super(power);
+    public ElectroEngine(float maxChargeLevel, int power) throws CarException {
+        super(power, propFile);
         this.maxChargeLevel = maxChargeLevel;
-        fuelConsumption.put(0, 0);
-        fuelConsumption.put(10, 1800);
-        fuelConsumption.put(500, 1800);
-        fuelConsumption.put(1000, 1500);
-        fuelConsumption.put(1300, 1200);
-        fuelConsumption.put(1500, 900);
-        fuelConsumption.put(1800, 800);
-        fuelConsumption.put(2500, 1200);
-        fuelConsumption.put(3000, 1500);
-        fuelConsumption.put(3500, 2000);
     }
 
     //=========================================================

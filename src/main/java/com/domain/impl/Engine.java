@@ -3,6 +3,8 @@ package com.domain.impl;
 import com.domain.ControlEngine;
 import com.exception.CarException;
 import org.apache.log4j.Logger;
+
+import java.io.*;
 import java.util.*;
 import static com.constants.Constants.ERROR_FUEL_CRITICAL_LEVEL;
 import static com.constants.FuelLevel.CRITICAL;
@@ -20,12 +22,33 @@ public abstract class Engine implements ControlEngine {
     //private heater;
     //private oilLevel;
 
-    public Engine (int power){
+    public Engine (int power, String fileProp) throws CarException {
         started = false;
         this.power = power;
         fuelConsumption = new HashMap<>();
+        loadProperties(fileProp);
     }
 
+
+    private void loadProperties(String fileProp) throws CarException {
+        Scanner prop = null;
+        try (InputStream file = Thread.currentThread().getContextClassLoader().getResourceAsStream(fileProp)){
+
+            if (file != null) {
+                try {
+                    prop = new Scanner(file).useDelimiter("=|\\R");
+                    while (prop.hasNextInt())
+                        fuelConsumption.put(prop.nextInt(), prop.nextInt());
+                }finally {
+                    if (prop != null)
+                        prop.close();
+                }
+            } else
+                throw new CarException("Error loading prop file " + fileProp);
+        } catch (IOException e) {
+            log.error(e.getMessage());
+        }
+    }
     //=========================================================
 
     @Override

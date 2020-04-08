@@ -1,6 +1,7 @@
 package com.domain.impl;
 
 import com.constants.FuelLevel;
+import com.exception.CarException;
 import org.apache.log4j.Logger;
 import static java.lang.String.format;
 import java.util.Comparator;
@@ -13,11 +14,12 @@ public class PetrolEngine extends Engine{
     final static Logger log = Logger.getLogger(PetrolEngine.class);
     private float petrolLevel;
     private final float maxPetrolLevel;
+    private static final String propFile = "petrol.properties";
 
-    public PetrolEngine(float maxPetrolLevel, int power){
-        super(power);
+    public PetrolEngine(float maxPetrolLevel, int power) throws CarException {
+        super(power, propFile);
         this.maxPetrolLevel = maxPetrolLevel;
-        fuelConsumption.put(0, 0);
+        /*fuelConsumption.put(0, 0);
         fuelConsumption.put(10, 12);
         fuelConsumption.put(500, 12);
         fuelConsumption.put(1000, 10);
@@ -26,7 +28,7 @@ public class PetrolEngine extends Engine{
         fuelConsumption.put(1800, 8);
         fuelConsumption.put(2500, 14);
         fuelConsumption.put(3000, 16);
-        fuelConsumption.put(3500, 18);
+        fuelConsumption.put(3500, 18);*/
     }
 
     //=========================================================

@@ -22,7 +22,7 @@ public class CarFactory {
         }
     }
 
-    private static Car buildSedan(){
+    private static Car buildSedan() throws CarException {
         PetrolEngine engine = new PetrolEngine(60, 120);
         engine.setPetrolLevel(2);
 
@@ -48,7 +48,7 @@ public class CarFactory {
                 .build();
     }
 
-    private static Car buildTesla(){
+    private static Car buildTesla() throws CarException {
         ElectroEngine engine = new ElectroEngine(10000, 120);
         engine.setChargeLevel(500);
 
